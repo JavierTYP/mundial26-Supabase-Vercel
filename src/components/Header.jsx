@@ -1,0 +1,116 @@
+import { differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
+import Badge from "./Badge.jsx";
+import Button from "./Button.jsx";
+
+function countdownParts(targetDate) {
+  const now = new Date();
+  const target = new Date(targetDate);
+  if (Number.isNaN(target.getTime())) return null;
+  const ms = target.getTime() - now.getTime();
+  if (ms <= 0) return { days: 0, hours: 0, minutes: 0 };
+
+  const days = differenceInDays(target, now);
+  const afterDays = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  const hours = differenceInHours(target, afterDays);
+  const afterHours = new Date(afterDays.getTime() + hours * 60 * 60 * 1000);
+  const minutes = differenceInMinutes(target, afterHours);
+
+  return { days, hours, minutes };
+}
+
+export default function Header({
+  torneo,
+  lastSavedLabel,
+  onExport,
+  onSaveBackup,
+  onRestore,
+  onReset,
+  onToggleSidebar,
+  userEmail,
+  onLogout,
+  onExportPredictions,
+}) {
+  const parts = countdownParts(torneo?.fechaInicio);
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/70 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          {onToggleSidebar ? (
+            <button
+              type="button"
+              className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-900/60 ring-1 ring-slate-800 md:hidden"
+              aria-label="Abrir menú"
+              onClick={onToggleSidebar}
+            >
+              <span className="text-lg font-black text-slate-200">≡</span>
+            </button>
+          ) : null}
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-500/10 ring-1 ring-blue-500/30">
+            <span className="text-lg font-black text-blue-200">M26</span>
+          </div>
+          <div>
+            <div className="text-lg font-black tracking-tight">
+              MUNDIAL 2026 <span className="text-blue-300">— SIMULADOR</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+              <Badge tone="blue">
+                {torneo?.nombre ?? "FIFA World Cup 2026"}
+              </Badge>
+              {parts && (
+                <Badge tone="neutral">
+                  Comienza en {parts.days}d {parts.hours}h {parts.minutes}m
+                </Badge>
+              )}
+              {lastSavedLabel && <span className="text-slate-400">{lastSavedLabel}</span>}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {userEmail ? (
+            <div className="mr-2 hidden items-center gap-2 text-xs text-slate-300 md:flex">
+              <span className="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">
+                {userEmail}
+              </span>
+              {onLogout ? (
+                <button
+                  type="button"
+                  className="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-1 font-bold uppercase tracking-wide text-slate-200 hover:bg-slate-900/70"
+                  onClick={onLogout}
+                >
+                  Salir
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+          {onExportPredictions ? (
+            <Button variant="secondary" onClick={onExportPredictions}>
+              Exportar pronósticos
+            </Button>
+          ) : null}
+          {onExport ? (
+            <Button variant="secondary" onClick={onExport}>
+              Exportar JSON
+            </Button>
+          ) : null}
+          {onSaveBackup ? (
+            <Button variant="secondary" onClick={onSaveBackup}>
+              Guardar backup
+            </Button>
+          ) : null}
+          {onRestore ? (
+            <Button variant="secondary" onClick={onRestore}>
+              Restaurar backup
+            </Button>
+          ) : null}
+          {onReset ? (
+            <Button variant="danger" onClick={onReset}>
+              Reiniciar
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </header>
+  );
+}

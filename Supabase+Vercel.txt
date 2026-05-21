@@ -1,0 +1,40 @@
+
+Te recomiendo sin duda alguna **Render** para esta estructura de aplicación, y te explico exactamente por qué:
+
+### ¿Por qué Render y no Vercel para tu app actual?
+*   **Tu app es un "servidor monolítico"**: Tienes una aplicación de Node.js con Express que funciona continuamente escuchando en un puerto.
+*   **Vercel es "Serverless"**: Vercel no ejecuta servidores web tradicionales en segundo plano. En su lugar, divide el backend en "funciones individuales sin estado" que se encienden y apagan según la demanda. Como tu base de datos SQLite actual es un archivo en disco (`app.sqlite`), en Vercel **se borraría y se resetearía constantemente** cada vez que estas funciones se apagaran (lo cual ocurre tras unos minutos de inactividad). No es viable sin cambiar la base de datos por completo.
+
+En cambio, **Render** te permite ejecutar tu servidor Express tal y como está estructurado ahora.
+
+---
+
+### Las dos formas de desplegar en Render
+
+Debido a que usas SQLite, tienes dos caminos en Render dependiendo de tu presupuesto:
+
+#### Opción A: Despliegue con Persistencia Real (Recomendado)
+*Coste aproximado: ~$7 USD/mes por el servidor estándar + ~$1 USD/mes por el disco.*
+*   **Cómo funciona:** Render te permite crear un **Persistent Disk (Volumen)** de 1 GB y montarlo en tu aplicación. Tu base de datos SQLite se guardará en ese disco virtual.
+*   **Resultado:** Tus usuarios podrán registrarse, guardar sus predicciones y, aunque reinicies, actualices o redespiegues la web, **ningún dato se perderá jamás**.
+
+#### Opción B: Despliegue 100% Gratis (Ideal para pruebas temporales)
+*Coste: 0$*
+*   **Cómo funciona:** Desplegas tu servidor en la capa gratuita de Web Services de Render sin disco persistente.
+*   **Advertencia crucial:** Los servicios gratuitos de Render se "duermen" si no reciben visitas en 15 minutos y se reinician al menos una vez al día. Cada vez que el servidor se duerma o se reinicie, **la base de datos SQLite se reseteará por completo**. Todos los usuarios creados y sus pronósticos desaparecerán. Es fantástico para probar que la app funcione en la nube, pero inviable para usarla con amigos.
+
+---
+
+### La alternativa 100% Gratis y robusta: Vercel + Supabase
+Si quieres una solución **100% gratuita y permanente**, la mejor estrategia es:
+1. Crear una base de datos PostgreSQL gratuita en la nube usando **Supabase**.
+2. Adaptar tu backend para que en vez de escribir en SQLite local, se conecte a Supabase.
+3. Desplegar todo en **Vercel** de manera gratuita y extremadamente rápida.
+
+---
+
+### ¿Cómo quieres proceder?
+
+1. **Probamos a desplegarlo en Render (Opción B - Gratis)** para que veas la app funcionando online de inmediato y verifiques que todo carga bien.
+2. **Lo desplegamos en Render (Opción A - Persistente)** para dejarlo ya configurado con base de datos real.
+3. **Exploramos la opción de Supabase + Vercel (100% Gratis)** para adaptarlo sin costes.
