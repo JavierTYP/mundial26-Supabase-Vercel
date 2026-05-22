@@ -129,7 +129,7 @@ function MatchPredictionCard({
 
       <div className="space-y-3">
         <div className="text-xs font-semibold text-slate-400">Resultado al final de los 90'</div>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-[1fr_auto_1fr] min-[420px]:items-center min-[420px]:gap-3">
           <div className="min-w-0 truncate rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm font-semibold">
             {localTeam ? (
               <>
@@ -143,7 +143,7 @@ function MatchPredictionCard({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <input
               disabled={disabled || !localTeam || !awayTeam}
               className="w-14 rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-center font-black outline-none ring-blue-500/30 focus:ring-2 disabled:opacity-40"

@@ -858,7 +858,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <Notification
         tone={notification?.tone}
         message={notification?.message}
@@ -896,7 +896,7 @@ export default function App() {
         }}
       />
 
-      <div className="grid grid-cols-1 gap-4 py-6 md:grid-cols-[220px_1fr]">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 py-6 md:grid-cols-[220px_1fr]">
         {sidebarOpen ? (
           <button
             type="button"
@@ -910,12 +910,12 @@ export default function App() {
           activeView={activeView}
           onNavigate={navigate}
           isAdmin={isAdmin}
-          className={`fixed inset-y-0 left-0 z-40 w-[200px] md:static md:inset-y-auto md:z-auto md:w-full ${
+          className={`fixed inset-y-0 left-0 z-40 w-[min(85vw,320px)] md:static md:inset-y-auto md:z-auto md:w-full ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           } transition-transform md:transition-none`}
         />
 
-        <main className="space-y-10 pb-10 px-4 md:px-6">
+        <main className="min-w-0 space-y-10 px-4 pb-10 md:px-6">
           {activeView === "admin-users" ? (
             isAdmin ? (
               <AdminUsersView
