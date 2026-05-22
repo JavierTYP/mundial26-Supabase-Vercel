@@ -66,3 +66,8 @@ Tienes 2 formas correctas de levantarla, según si quieres **modo desarrollo** o
 Notas:
 - `npm run start` = solo backend (`5174`), **no** compila ni levanta el frontend por sí solo.
 - Si usas la Opción A, la URL para “ver la app” es `5173`. Si usas la Opción B, es `5174`.
+
+
+
+El las fase eliminatorias (16avos, 8avos, 4tos, semis y final) los usuarios pueden introducir como resultado un empate y la app le pide que eleja un equipo ganador.
+Igualmente el administrador cuando

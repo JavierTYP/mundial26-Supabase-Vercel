@@ -69,6 +69,11 @@ export async function createDb() {
       updated_at TEXT NOT NULL,
       PRIMARY KEY (email, match_id)
     );
+    CREATE TABLE IF NOT EXISTS goleadores_picks (
+      email TEXT PRIMARY KEY,
+      picks_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 
   // Migration: existing DBs may not have the nick column.
@@ -84,6 +89,9 @@ export async function createDb() {
   } catch {
     // ignore if already exists
   }
+
+  // Seed goleadores_picks table for existing DBs (if missing).
+  // (CREATE TABLE IF NOT EXISTS already handles new DBs.)
 
   persistDb(db);
   return {
@@ -142,6 +150,11 @@ async function createPgDb() {
       winner TEXT,
       updated_at TEXT NOT NULL,
       PRIMARY KEY (email, match_id)
+    );
+    CREATE TABLE IF NOT EXISTS goleadores_picks (
+      email TEXT PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
+      picks_json JSONB NOT NULL,
+      updated_at TEXT NOT NULL
     );
   `);
 

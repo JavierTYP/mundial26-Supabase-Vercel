@@ -440,6 +440,44 @@ app.put("/api/predictions/me", async (req, res) => {
   res.json({ ok: true, updatedAt });
 });
 
+function normalizeGoleadoresPicks(picks) {
+  const base = Array.isArray(picks) ? picks : [];
+  const out = [0, 1, 2].map((idx) => {
+    const row = base[idx] ?? {};
+    const team = String(row?.team ?? "").trim();
+    const player = String(row?.player ?? "").trim();
+    return { team, player };
+  });
+  return out;
+}
+
+app.get("/api/goleadores/me", async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  const email = req.user.email;
+  const row = await dbGet(db, "SELECT picks_json, updated_at FROM goleadores_picks WHERE email = ?", [
+    email,
+  ]);
+  const picksRaw = row?.picks_json ?? null;
+  const picks =
+    picksRaw && typeof picksRaw === "string" ? jsonOrNull(picksRaw) : picksRaw && typeof picksRaw === "object" ? picksRaw : null;
+  res.json({ email, picks: normalizeGoleadoresPicks(picks), updatedAt: row?.updated_at ?? null });
+});
+
+app.put("/api/goleadores/me", async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  const email = req.user.email;
+  const picks = normalizeGoleadoresPicks(req.body?.picks);
+  const updatedAt = new Date().toISOString();
+  const picksValue = db?.__dbKind === "pg" ? picks : JSON.stringify(picks);
+  await dbRun(
+    db,
+    "INSERT INTO goleadores_picks (email, picks_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET picks_json=excluded.picks_json, updated_at=excluded.updated_at",
+    [email, picksValue, updatedAt],
+  );
+  persistDb(db);
+  res.json({ ok: true, updatedAt });
+});
+
 app.get("/api/admin/users", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   const rows = await dbAll(db, "SELECT email, role, nick, created_at FROM users ORDER BY email ASC", []);

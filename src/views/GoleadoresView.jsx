@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "../components/Card.jsx";
+import Button from "../components/Button.jsx";
 import { parseCsv } from "../utils/csv.js";
+import { apiGetMyGoleadores, apiPutMyGoleadores } from "../utils/api.js";
 import { loadGoleadores, saveGoleadores } from "../utils/goleadoresStorage.js";
 import goleadoresCsv from "../../data/goleadores.csv?raw";
 
@@ -50,11 +52,42 @@ export default function GoleadoresView({ userEmail }) {
 
   const [picks, setPicks] = useState(() => normalizePicks([]));
   const skipSaveRef = useRef(true);
+  const lastSavedRef = useRef(JSON.stringify(normalizePicks([])));
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // "saved" | "error" | null
 
   useEffect(() => {
-    const loaded = loadGoleadores(userEmail);
-    skipSaveRef.current = true;
-    setPicks(normalizePicks(loaded.picks));
+    let cancelled = false;
+    async function load() {
+      if (!userEmail) {
+        skipSaveRef.current = true;
+        setPicks(normalizePicks([]));
+        lastSavedRef.current = JSON.stringify(normalizePicks([]));
+        return;
+      }
+      try {
+        const r = await apiGetMyGoleadores();
+        if (cancelled) return;
+        const normalized = normalizePicks(r?.picks ?? []);
+        skipSaveRef.current = true;
+        setPicks(normalized);
+        lastSavedRef.current = JSON.stringify(normalized);
+        setSaveStatus(null);
+      } catch {
+        // Fallback: local storage (useful in dev/offline).
+        const loaded = loadGoleadores(userEmail);
+        if (cancelled) return;
+        const normalized = normalizePicks(loaded.picks);
+        skipSaveRef.current = true;
+        setPicks(normalized);
+        lastSavedRef.current = JSON.stringify(normalized);
+        setSaveStatus(null);
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [userEmail]);
 
   useEffect(() => {
@@ -62,8 +95,33 @@ export default function GoleadoresView({ userEmail }) {
       skipSaveRef.current = false;
       return;
     }
-    saveGoleadores(userEmail, picks);
-  }, [userEmail, picks]);
+    setSaveStatus(null);
+  }, [picks]);
+
+  const isDirty = useMemo(() => {
+    return JSON.stringify(normalizePicks(picks)) !== lastSavedRef.current;
+  }, [picks]);
+
+  async function handleSave() {
+    if (!userEmail) return;
+    if (!isDirty) return;
+    setIsSaving(true);
+    setSaveStatus(null);
+    try {
+      const normalized = normalizePicks(picks);
+      await apiPutMyGoleadores(normalized);
+      lastSavedRef.current = JSON.stringify(normalized);
+      setSaveStatus("saved");
+      // Keep a local fallback copy too.
+      saveGoleadores(userEmail, normalized);
+    } catch {
+      setSaveStatus("error");
+      // Fallback to local storage if backend is unavailable.
+      saveGoleadores(userEmail, picks);
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   const updatePick = (idx, next) => {
     setPicks((prev) => {
@@ -82,8 +140,26 @@ export default function GoleadoresView({ userEmail }) {
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-black tracking-tight">Goleadores</h2>
-        <p className="text-sm text-slate-300">Elige tus 3 goleadores (equipo + jugador).</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-2xl font-black tracking-tight">Goleadores</h2>
+            <p className="text-sm text-slate-300">Elige tus 3 goleadores (equipo + jugador).</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {saveStatus === "saved" ? (
+              <div className="text-xs font-semibold text-emerald-300">Guardado</div>
+            ) : saveStatus === "error" ? (
+              <div className="text-xs font-semibold text-rose-300">No se pudo guardar</div>
+            ) : isDirty ? (
+              <div className="text-xs font-semibold text-amber-300">Cambios sin guardar</div>
+            ) : (
+              <div className="text-xs font-semibold text-slate-400">Sin cambios</div>
+            )}
+            <Button variant="secondary" onClick={handleSave} disabled={!isDirty || isSaving || !userEmail}>
+              {isSaving ? "Guardando..." : "Guardar"}
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Card className="p-4">

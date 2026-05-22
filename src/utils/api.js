@@ -58,6 +58,17 @@ export function apiPutMyPrediction(matchId, local, visitante, winner = null) {
   });
 }
 
+export function apiGetMyGoleadores() {
+  return apiFetch("/api/goleadores/me", { method: "GET" });
+}
+
+export function apiPutMyGoleadores(picks) {
+  return apiFetch("/api/goleadores/me", {
+    method: "PUT",
+    body: JSON.stringify({ picks }),
+  });
+}
+
 export function apiAdminUsers() {
   return apiFetch("/api/admin/users", { method: "GET" });
 }
