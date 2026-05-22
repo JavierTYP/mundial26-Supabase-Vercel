@@ -68,7 +68,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`h-full overflow-y-auto overscroll-contain border-r border-slate-800 bg-slate-950/40 backdrop-blur ${className}`}
+      className={`h-full max-h-dvh overflow-y-auto overscroll-contain border-r border-slate-800 bg-slate-950/40 backdrop-blur ${className}`}
     >
       <div className="flex h-full flex-col gap-3 p-4">
         <div className="text-xs font-black tracking-widest text-slate-400">MENÚ</div>

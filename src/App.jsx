@@ -900,7 +900,7 @@ export default function App() {
         {sidebarOpen ? (
           <button
             type="button"
-            className="fixed inset-0 z-30 bg-black/50 md:hidden"
+            className="fixed inset-0 z-50 bg-black/50 md:hidden"
             aria-label="Cerrar menú"
             onClick={() => setSidebarOpen(false)}
           />
@@ -910,7 +910,7 @@ export default function App() {
           activeView={activeView}
           onNavigate={navigate}
           isAdmin={isAdmin}
-          className={`fixed inset-y-0 left-0 z-40 w-[min(85vw,320px)] md:static md:inset-y-auto md:z-auto md:w-full ${
+          className={`fixed inset-y-0 left-0 z-[60] w-[min(85vw,320px)] md:static md:inset-y-auto md:z-auto md:w-full ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           } transition-transform md:transition-none`}
         />
