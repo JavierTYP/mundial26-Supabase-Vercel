@@ -231,6 +231,17 @@ const app = express();
 app.disable("x-powered-by");
 app.use(express.json({ limit: "2mb" }));
 
+app.get("/api/health", async (_req, res) => {
+  try {
+    const row = await dbGet(db, "SELECT 1 as ok", []);
+    res.json({ ok: true, db: { mode }, ping: row?.ok ?? 1 });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("healthcheck_failed", err);
+    res.status(500).json({ ok: false, db: { mode }, error: String(err?.message ?? err) });
+  }
+});
+
 app.use(async (req, _res, next) => {
   const cookies = parseCookies(req.headers.cookie);
   const sid = cookies.sid || req.get("x-sid") || null;
