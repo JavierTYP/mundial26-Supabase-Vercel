@@ -19,8 +19,9 @@ export default function MatchRow({
   readOnly = false,
   saveLabel = "Actualizar",
   autoSave = false,
+  fallbackToPartidoResultado = true,
 }) {
-  const effectiveResultado = resultado ?? partido.resultado;
+  const effectiveResultado = fallbackToPartidoResultado ? resultado ?? partido.resultado : resultado ?? null;
   const [local, setLocal] = useState(effectiveResultado?.local ?? "");
   const [visitante, setVisitante] = useState(effectiveResultado?.visitante ?? "");
   const [flash, setFlash] = useState(false);

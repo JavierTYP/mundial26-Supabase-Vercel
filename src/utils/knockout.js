@@ -1,10 +1,13 @@
 import { groupIsComplete, calculateStandings } from "./standings.js";
 
 export function getClassifiedByGroup(grupos, resultsByMatchId = null) {
+  const standingsOpts = resultsByMatchId
+    ? { fallbackToPartidoResultado: false }
+    : { fallbackToPartidoResultado: true };
   const out = {};
   for (const [gid, grupo] of Object.entries(grupos)) {
-    if (!groupIsComplete(grupo, resultsByMatchId)) continue;
-    const standings = calculateStandings(grupo, resultsByMatchId);
+    if (!groupIsComplete(grupo, resultsByMatchId, standingsOpts)) continue;
+    const standings = calculateStandings(grupo, resultsByMatchId, standingsOpts);
     out[gid] = { first: standings[0], second: standings[1], third: standings[2] };
   }
   return out;

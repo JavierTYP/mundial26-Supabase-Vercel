@@ -5,7 +5,11 @@ function pointsForMatch(resultado) {
   return { local: 1, visitante: 1 };
 }
 
-export function calculateStandings(grupo, resultsByMatchId = null) {
+export function calculateStandings(
+  grupo,
+  resultsByMatchId = null,
+  { fallbackToPartidoResultado = true } = {},
+) {
   const base = new Map(
     grupo.equipos.map((e) => [
       e.id,
@@ -24,7 +28,8 @@ export function calculateStandings(grupo, resultsByMatchId = null) {
   );
 
   for (const partido of grupo.partidos) {
-    const resultado = resultsByMatchId?.[partido.id] ?? partido.resultado;
+    const provided = resultsByMatchId ? resultsByMatchId?.[partido.id] : null;
+    const resultado = fallbackToPartidoResultado ? provided ?? partido.resultado : provided ?? null;
     const puntos = pointsForMatch(resultado);
     if (!puntos) continue;
 
@@ -70,9 +75,14 @@ export function calculateStandings(grupo, resultsByMatchId = null) {
   return standings;
 }
 
-export function groupIsComplete(grupo, resultsByMatchId = null) {
+export function groupIsComplete(
+  grupo,
+  resultsByMatchId = null,
+  { fallbackToPartidoResultado = true } = {},
+) {
   return (grupo?.partidos ?? []).every((p) => {
-    const resultado = resultsByMatchId?.[p.id] ?? p.resultado;
+    const provided = resultsByMatchId ? resultsByMatchId?.[p.id] : null;
+    const resultado = fallbackToPartidoResultado ? provided ?? p.resultado : provided ?? null;
     return resultado?.local != null && resultado?.visitante != null;
   });
 }

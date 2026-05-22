@@ -40,6 +40,7 @@ export default function GroupCard({
           grupo={grupo}
           highlightTop2
           resultsByMatchId={mode === "predictions" ? standingsResultsByMatchId : null}
+          fallbackToPartidoResultado={mode !== "predictions"}
         />
       </div>
 
@@ -75,6 +76,7 @@ export default function GroupCard({
                     equipoLocal={byId.get(p.idLocal)}
                     equipoVisitante={byId.get(p.idVisitante)}
                     resultado={mode === "predictions" ? predictionsByMatchId?.[p.id] ?? null : null}
+                    fallbackToPartidoResultado={mode !== "predictions"}
                     readOnly={
                       mode === "predictions" ? predictionsLocked : Boolean(resultsReadOnly)
                     }

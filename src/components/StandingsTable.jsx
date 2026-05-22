@@ -1,8 +1,13 @@
 import { calculateStandings } from "../utils/standings.js";
 import Flag from "./Flag.jsx";
 
-export default function StandingsTable({ grupo, highlightTop2, resultsByMatchId = null }) {
-  const standings = calculateStandings(grupo, resultsByMatchId);
+export default function StandingsTable({
+  grupo,
+  highlightTop2,
+  resultsByMatchId = null,
+  fallbackToPartidoResultado = true,
+}) {
+  const standings = calculateStandings(grupo, resultsByMatchId, { fallbackToPartidoResultado });
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
