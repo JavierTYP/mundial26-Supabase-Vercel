@@ -585,7 +585,7 @@ export default function App() {
     return buildPredictedKnockoutTournament(state, standingsPredictionsByMatchId);
   }, [standingsPredictionsByMatchId, state]);
 
-  function updateKnockoutMatch(roundKey, matchId, local, visitante) {
+  function updateKnockoutMatch(roundKey, matchId, local, visitante, ganadorPicked = null) {
     if (!isAdmin) {
       setNotification({
         tone: "error",
@@ -607,6 +607,7 @@ export default function App() {
       const ganador = winnerId({
         ...m,
         resultado: { local, visitante },
+        ganador: ganadorPicked ?? m.ganador ?? null,
       });
       return {
         ...m,
@@ -631,7 +632,7 @@ export default function App() {
       });
   }
 
-  function updateFinalMatch(local, visitante) {
+  function updateFinalMatch(local, visitante, ganadorPicked = null) {
     if (!isAdmin) {
       setNotification({
         tone: "error",
@@ -648,6 +649,7 @@ export default function App() {
     const ganador = winnerId({
       ...hydrated.final,
       resultado: { local, visitante },
+      ganador: ganadorPicked ?? hydrated.final?.ganador ?? null,
     });
     const nextSnapshot = syncKnockoutFromGroups({
       ...hydrated,

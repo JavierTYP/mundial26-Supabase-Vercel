@@ -26,14 +26,17 @@ function MatchCard({ match, teamsById, disabled, onSave }) {
 
   const [local, setLocal] = useState(match.resultado?.local ?? "");
   const [visitante, setVisitante] = useState(match.resultado?.visitante ?? "");
+  const [pickedWinner, setPickedWinner] = useState(match.ganador ?? "");
 
   useEffect(() => {
     setLocal(match.resultado?.local ?? "");
     setVisitante(match.resultado?.visitante ?? "");
+    setPickedWinner(match.ganador ?? "");
   }, [
     match.id,
     match.resultado?.local,
     match.resultado?.visitante,
+    match.ganador,
     match.local,
     match.visitante,
   ]);
@@ -42,10 +45,12 @@ function MatchCard({ match, teamsById, disabled, onSave }) {
   const v = clampGoals(visitante);
   const canSave = !disabled && l != null && v != null;
   const isTie = canSave && l === v;
+  const canPickWinner = isTie && localTeam && awayTeam;
 
   const winner = winnerId({
     ...match,
     resultado: { local: l, visitante: v },
+    ganador: pickedWinner || null,
   });
 
   return (
@@ -108,16 +113,38 @@ function MatchCard({ match, teamsById, disabled, onSave }) {
 
         <div className="flex items-center justify-between gap-2">
           <div className="text-xs text-slate-400">
-            {isTie
-              ? "Empate no permitido (elige un ganador)."
-              : winner
-                ? `Ganador: ${teamsById.get(winner)?.nombre ?? winner}`
-                : "Completa el resultado para avanzar."}
+            {disabled
+              ? "Resultados bloqueados."
+              : isTie
+                ? "En caso de empate, elije ganador."
+                : winner
+                  ? `Ganador: ${teamsById.get(winner)?.nombre ?? winner}`
+                  : "Completa el resultado para avanzar."}
           </div>
-          <Button variant="secondary" disabled={!canSave || isTie} onClick={() => onSave(l, v)}>
+          <Button
+            variant="secondary"
+            disabled={!canSave || (isTie && !winner)}
+            onClick={() => onSave(l, v, winner ?? null)}
+          >
             Guardar
           </Button>
         </div>
+
+        {canPickWinner ? (
+          <div className="pt-1">
+            <label className="mb-1 block text-xs font-semibold text-slate-300">En caso de empate</label>
+            <select
+              disabled={disabled}
+              className="w-full rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-semibold outline-none ring-blue-500/30 focus:ring-2 disabled:opacity-40"
+              value={pickedWinner}
+              onChange={(e) => setPickedWinner(e.target.value)}
+            >
+              <option value="">Elije ganador</option>
+              <option value={match.local}>{localTeam?.nombre ?? String(match.local)}</option>
+              <option value={match.visitante}>{awayTeam?.nombre ?? String(match.visitante)}</option>
+            </select>
+          </div>
+        ) : null}
       </div>
     </Card>
   );
@@ -150,9 +177,9 @@ export default function KnockoutRoundView({
             match={m}
             teamsById={teamsById}
             disabled={disabled}
-            onSave={(l, v) => {
-              if (roundKey === "final") onUpdateFinal(l, v);
-              else onUpdateRoundMatch(roundKey, m.id, l, v);
+            onSave={(l, v, winner) => {
+              if (roundKey === "final") onUpdateFinal(l, v, winner);
+              else onUpdateRoundMatch(roundKey, m.id, l, v, winner);
             }}
           />
         ))}

@@ -151,6 +151,8 @@ export function winnerId(match) {
     return null;
   if (match.resultado.local > match.resultado.visitante) return match.local;
   if (match.resultado.local < match.resultado.visitante) return match.visitante;
+  const picked = match?.ganador ?? null;
+  if (picked === match.local || picked === match.visitante) return picked;
   return null;
 }
 
