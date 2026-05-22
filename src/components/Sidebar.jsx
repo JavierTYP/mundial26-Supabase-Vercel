@@ -105,6 +105,13 @@ export default function Sidebar({
                   ))}
                 </div>
               ) : null}
+
+              <NavButton
+                active={activeView === "goleadores"}
+                onClick={() => onNavigate("goleadores")}
+              >
+                Goleadores
+              </NavButton>
             </>
           ) : null}
 

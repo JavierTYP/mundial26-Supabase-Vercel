@@ -20,6 +20,7 @@ import AdminScoreboardView from "./views/AdminScoreboardView.jsx";
 import ScoreboardView from "./views/ScoreboardView.jsx";
 import KnockoutPredictionsView from "./views/KnockoutPredictionsView.jsx";
 import ResumenView from "./views/ResumenView.jsx";
+import GoleadoresView from "./views/GoleadoresView.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 import { advanceRound, buildDieciseisavos, winnerId } from "./utils/knockout.js";
@@ -305,6 +306,7 @@ export default function App() {
   const [predictionsByMatchId, setPredictionsByMatchId] = useState({});
   const [draftPredictionsByMatchId, setDraftPredictionsByMatchId] = useState({});
   const [predictionsLocked, setPredictionsLocked] = useState(false);
+  const [resultsLocked, setResultsLocked] = useState(false);
 
   const [state, setState] = useState(() => syncKnockoutFromGroups(hydrateTournamentState(initialData)));
   const groupIds = useMemo(() => Object.keys(state.grupos), [state.grupos]);
@@ -335,6 +337,8 @@ export default function App() {
   async function refreshTournamentState({ force = false } = {}) {
     try {
       const r = await apiGetTournamentState();
+      setPredictionsLocked(Boolean(r?.predictionsLocked));
+      setResultsLocked(Boolean(r?.resultsLocked));
       const remoteState = r?.state ?? null;
       if (!remoteState) return false;
 
@@ -368,14 +372,19 @@ export default function App() {
         const me = await apiMe();
         if (cancelled) return;
         setPredictionsLocked(Boolean(me?.settings?.predictionsLocked));
+        setResultsLocked(Boolean(me?.settings?.resultsLocked));
         if (!me?.user) return;
         setUser(me.user);
 
-        const { state: torneoState, updatedAt } = await apiGetTournamentState();
+        const tournamentResp = await apiGetTournamentState();
+        const torneoState = tournamentResp?.state ?? null;
+        const updatedAt = tournamentResp?.updatedAt ?? null;
         if (!cancelled && torneoState) {
           setState(syncKnockoutFromGroups(hydrateTournamentState(torneoState)));
           const t = updatedAt ?? torneoState?.metadata?.ultimaActualizacion;
           setLastSavedAt(t ? new Date(t) : null);
+          setPredictionsLocked(Boolean(tournamentResp?.predictionsLocked));
+          setResultsLocked(Boolean(tournamentResp?.resultsLocked));
         }
 
         if (me.user.role === "admin") {
@@ -386,6 +395,7 @@ export default function App() {
           if (!cancelled) {
             setPredictionsByMatchId(migratePredictionKeys(p.predictions ?? {}));
             setDraftPredictionsByMatchId({});
+            setPredictionsLocked(Boolean(p?.predictionsLocked));
           }
         }
       } catch {
@@ -466,6 +476,10 @@ export default function App() {
       });
       return;
     }
+    if (resultsLocked) {
+      setNotification({ tone: "error", message: "Resultados bloqueados por el administrador." });
+      return;
+    }
 
     const hydrated = hydrateTournamentState(state);
     const g = hydrated?.grupos?.[grupoId] ?? null;
@@ -491,7 +505,11 @@ export default function App() {
     setState(nextSnapshot);
     void apiPutTournamentState(nextSnapshot)
       .then((r) => setLastSavedAt(r?.updatedAt ? new Date(r.updatedAt) : new Date()))
-      .catch(() => setNotification({ tone: "error", message: "No se pudieron guardar resultados." }));
+      .catch((e) => {
+        if (e?.data?.error === "results_locked") setResultsLocked(true);
+        void refreshTournamentState({ force: true });
+        setNotification({ tone: "error", message: "No se pudieron guardar resultados." });
+      });
   }
 
   function updatePrediction(matchId, local, visitante, winner = undefined) {
@@ -523,6 +541,15 @@ export default function App() {
     const winnerToSend =
       winner !== undefined ? winner : (predictionsByMatchId?.[matchId]?.winner ?? null);
     void apiPutMyPrediction(matchId, local, visitante, winnerToSend).catch((e) => {
+      if (e?.data?.error === "predictions_locked") {
+        setPredictionsLocked(true);
+        void apiGetMyPredictions()
+          .then((p) => {
+            setPredictionsByMatchId(migratePredictionKeys(p.predictions ?? {}));
+            setDraftPredictionsByMatchId({});
+          })
+          .catch(() => {});
+      }
       setNotification({
         tone: "error",
         message:
@@ -566,6 +593,10 @@ export default function App() {
       });
       return;
     }
+    if (resultsLocked) {
+      setNotification({ tone: "error", message: "Resultados bloqueados por el administrador." });
+      return;
+    }
 
     const hydrated = hydrateTournamentState(state);
     const list = Array.isArray(hydrated?.[roundKey]) ? hydrated[roundKey] : null;
@@ -593,7 +624,11 @@ export default function App() {
     setState(nextSnapshot);
     void apiPutTournamentState(nextSnapshot)
       .then((r) => setLastSavedAt(r?.updatedAt ? new Date(r.updatedAt) : new Date()))
-      .catch(() => setNotification({ tone: "error", message: "No se pudieron guardar resultados." }));
+      .catch((e) => {
+        if (e?.data?.error === "results_locked") setResultsLocked(true);
+        void refreshTournamentState({ force: true });
+        setNotification({ tone: "error", message: "No se pudieron guardar resultados." });
+      });
   }
 
   function updateFinalMatch(local, visitante) {
@@ -602,6 +637,10 @@ export default function App() {
         tone: "error",
         message: "Solo el administrador puede introducir resultados reales.",
       });
+      return;
+    }
+    if (resultsLocked) {
+      setNotification({ tone: "error", message: "Resultados bloqueados por el administrador." });
       return;
     }
 
@@ -619,7 +658,11 @@ export default function App() {
     setState(nextSnapshot);
     void apiPutTournamentState(nextSnapshot)
       .then((r) => setLastSavedAt(r?.updatedAt ? new Date(r.updatedAt) : new Date()))
-      .catch(() => setNotification({ tone: "error", message: "No se pudieron guardar resultados." }));
+      .catch((e) => {
+        if (e?.data?.error === "results_locked") setResultsLocked(true);
+        void refreshTournamentState({ force: true });
+        setNotification({ tone: "error", message: "No se pudieron guardar resultados." });
+      });
   }
 
   function handleExport() {
@@ -877,12 +920,31 @@ export default function App() {
                 users={users}
                 predictionsLocked={predictionsLocked}
                 onTogglePredictionsLocked={(locked) => {
-                  void apiAdminSettings(Boolean(locked))
+                  void apiAdminSettings(Boolean(locked), undefined)
                     .then((r) => {
                       setPredictionsLocked(Boolean(r?.settings?.predictionsLocked));
+                      setResultsLocked(Boolean(r?.settings?.resultsLocked));
                       setNotification({
                         tone: "success",
                         message: locked ? "Pronósticos bloqueados." : "Pronósticos desbloqueados.",
+                      });
+                    })
+                    .catch(() => {
+                      setNotification({
+                        tone: "error",
+                        message: "No se pudo actualizar el bloqueo.",
+                      });
+                    });
+                }}
+                resultsLocked={resultsLocked}
+                onToggleResultsLocked={(locked) => {
+                  void apiAdminSettings(undefined, Boolean(locked))
+                    .then((r) => {
+                      setPredictionsLocked(Boolean(r?.settings?.predictionsLocked));
+                      setResultsLocked(Boolean(r?.settings?.resultsLocked));
+                      setNotification({
+                        tone: "success",
+                        message: locked ? "Resultados bloqueados." : "Resultados desbloqueados.",
                       });
                     })
                     .catch(() => {
@@ -1035,7 +1097,7 @@ export default function App() {
                     grupo={state.grupos[activeGroup]}
                     onUpdateMatch={updateGroupMatch}
                     mode="results"
-                    resultsReadOnly={!isAdmin}
+                    resultsReadOnly={!isAdmin || resultsLocked}
                   />
                 </div>
               </Card>
@@ -1168,6 +1230,8 @@ export default function App() {
             <ScoreboardView grupos={state.grupos} />
           ) : null}
 
+          {activeView === "goleadores" ? <GoleadoresView userEmail={user?.email} /> : null}
+
           {activeView === "dieciseisavos" ? (
             <KnockoutRoundView
               torneo={state}
@@ -1176,7 +1240,7 @@ export default function App() {
               matches={state.dieciseisavos ?? []}
               onUpdateRoundMatch={updateKnockoutMatch}
               onUpdateFinal={updateFinalMatch}
-              disabled={!isAdmin}
+              disabled={!isAdmin || resultsLocked}
             />
           ) : null}
 
@@ -1188,7 +1252,7 @@ export default function App() {
               matches={state.octavos ?? []}
               onUpdateRoundMatch={updateKnockoutMatch}
               onUpdateFinal={updateFinalMatch}
-              disabled={!isAdmin}
+              disabled={!isAdmin || resultsLocked}
             />
           ) : null}
 
@@ -1200,7 +1264,7 @@ export default function App() {
               matches={state.cuartos ?? []}
               onUpdateRoundMatch={updateKnockoutMatch}
               onUpdateFinal={updateFinalMatch}
-              disabled={!isAdmin}
+              disabled={!isAdmin || resultsLocked}
             />
           ) : null}
 
@@ -1212,7 +1276,7 @@ export default function App() {
               matches={state.semifinales ?? []}
               onUpdateRoundMatch={updateKnockoutMatch}
               onUpdateFinal={updateFinalMatch}
-              disabled={!isAdmin}
+              disabled={!isAdmin || resultsLocked}
             />
           ) : null}
 
@@ -1224,7 +1288,7 @@ export default function App() {
               matches={[state.final].filter(Boolean)}
               onUpdateRoundMatch={updateKnockoutMatch}
               onUpdateFinal={updateFinalMatch}
-              disabled={!isAdmin}
+              disabled={!isAdmin || resultsLocked}
             />
           ) : null}
 

@@ -105,9 +105,12 @@ export function apiScoreboard(groupId) {
   return apiFetch(`/api/scoreboard?${qs.toString()}`, { method: "GET" });
 }
 
-export function apiAdminSettings(predictionsLocked) {
+export function apiAdminSettings(predictionsLocked, resultsLocked) {
+  const payload = {};
+  if (predictionsLocked !== undefined) payload.predictionsLocked = predictionsLocked;
+  if (resultsLocked !== undefined) payload.resultsLocked = resultsLocked;
   return apiFetch("/api/admin/settings", {
     method: "PUT",
-    body: JSON.stringify({ predictionsLocked }),
+    body: JSON.stringify(payload),
   });
 }

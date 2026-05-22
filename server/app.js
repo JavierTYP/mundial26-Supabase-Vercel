@@ -159,6 +159,21 @@ async function setPredictionsLocked(locked) {
   persistDb(db);
 }
 
+async function getResultsLocked() {
+  const row = await dbGet(db, "SELECT value FROM settings WHERE key = ?", ["results_locked"]);
+  return row ? row.value === "1" : false;
+}
+
+async function setResultsLocked(locked) {
+  const v = locked ? "1" : "0";
+  await dbRun(
+    db,
+    "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+    ["results_locked", v],
+  );
+  persistDb(db);
+}
+
 async function getTournamentState() {
   const row = await dbGet(db, "SELECT json, updated_at FROM tournament_state WHERE id = 1", []);
   if (!row?.json) return { state: initialState, updatedAt: null };
@@ -184,6 +199,9 @@ if (!(await dbGet(db, "SELECT id FROM tournament_state WHERE id = 1", []))) {
 }
 if (!(await dbGet(db, "SELECT key FROM settings WHERE key = ?", ["predictions_locked"]))) {
   await setPredictionsLocked(false);
+}
+if (!(await dbGet(db, "SELECT key FROM settings WHERE key = ?", ["results_locked"]))) {
+  await setResultsLocked(false);
 }
 
 // Migrate stored tournament state + predictions to the new unique match id scheme.
@@ -337,19 +355,34 @@ app.post("/api/logout", async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get("/api/me", (req, res) => {
+app.get("/api/me", async (req, res) => {
   if (!requireAuth(req, res)) return;
-  res.json({ user: req.user });
+  res.json({
+    user: req.user,
+    settings: {
+      predictionsLocked: await getPredictionsLocked(),
+      resultsLocked: await getResultsLocked(),
+    },
+  });
 });
 
 app.get("/api/tournament-state", async (req, res) => {
   if (!requireAuth(req, res)) return;
   const { state, updatedAt } = await getTournamentState();
-  res.json({ state, updatedAt, predictionsLocked: await getPredictionsLocked() });
+  res.json({
+    state,
+    updatedAt,
+    predictionsLocked: await getPredictionsLocked(),
+    resultsLocked: await getResultsLocked(),
+  });
 });
 
 app.put("/api/tournament-state", async (req, res) => {
   if (!requireAdmin(req, res)) return;
+  if (await getResultsLocked()) {
+    res.status(409).json({ error: "results_locked" });
+    return;
+  }
   const state = req.body?.state ?? null;
   if (!state || typeof state !== "object") {
     res.status(400).json({ error: "invalid_state" });
@@ -505,7 +538,10 @@ app.get("/api/admin/predictions/export", async (req, res) => {
     type: "mundial2026_predictions_export",
     version: 1,
     exportedAt: new Date().toISOString(),
-    settings: { predictionsLocked: await getPredictionsLocked() },
+    settings: {
+      predictionsLocked: await getPredictionsLocked(),
+      resultsLocked: await getResultsLocked(),
+    },
     torneo: {
       nombre: state?.torneo?.nombre ?? null,
       fechaInicio: state?.torneo?.fechaInicio ?? null,
@@ -630,9 +666,19 @@ app.get("/api/admin/scoreboard", async (req, res) => {
 
 app.put("/api/admin/settings", async (req, res) => {
   if (!requireAdmin(req, res)) return;
-  const locked = Boolean(req.body?.predictionsLocked);
-  await setPredictionsLocked(locked);
-  res.json({ ok: true, settings: { predictionsLocked: await getPredictionsLocked() } });
+  if (Object.prototype.hasOwnProperty.call(req.body ?? {}, "predictionsLocked")) {
+    await setPredictionsLocked(Boolean(req.body?.predictionsLocked));
+  }
+  if (Object.prototype.hasOwnProperty.call(req.body ?? {}, "resultsLocked")) {
+    await setResultsLocked(Boolean(req.body?.resultsLocked));
+  }
+  res.json({
+    ok: true,
+    settings: {
+      predictionsLocked: await getPredictionsLocked(),
+      resultsLocked: await getResultsLocked(),
+    },
+  });
 });
 
 // Local-only static hosting. On Vercel the frontend is served by the platform.

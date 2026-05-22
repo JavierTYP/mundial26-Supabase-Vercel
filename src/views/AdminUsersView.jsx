@@ -8,6 +8,8 @@ export default function AdminUsersView({
   onClearNonAdminUsers,
   predictionsLocked,
   onTogglePredictionsLocked,
+  resultsLocked,
+  onToggleResultsLocked,
 }) {
   return (
     <section className="space-y-4">
@@ -24,6 +26,12 @@ export default function AdminUsersView({
           onClick={() => onTogglePredictionsLocked?.(!predictionsLocked)}
         >
           {predictionsLocked ? "Desbloquear pronósticos" : "Bloquear pronósticos"}
+        </Button>
+        <Button
+          variant={resultsLocked ? "danger" : "secondary"}
+          onClick={() => onToggleResultsLocked?.(!resultsLocked)}
+        >
+          {resultsLocked ? "Desbloquear resultados" : "Bloquear resultados"}
         </Button>
         <Button
           variant="danger"
