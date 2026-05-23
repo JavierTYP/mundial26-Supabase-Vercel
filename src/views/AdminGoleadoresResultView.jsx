@@ -3,8 +3,7 @@ import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
 import SelectMenu from "../components/SelectMenu.jsx";
 import { parseCsv } from "../utils/csv.js";
-import { apiGetMyGoleadores, apiPutMyGoleadores } from "../utils/api.js";
-import { loadGoleadores, saveGoleadores } from "../utils/goleadoresStorage.js";
+import { apiAdminGetGoleadoresResult, apiAdminPutGoleadoresResult } from "../utils/api.js";
 import goleadoresCsv from "../../data/goleadores.csv?raw";
 
 function normalizePicks(picks) {
@@ -15,7 +14,7 @@ function normalizePicks(picks) {
   }));
 }
 
-export default function GoleadoresView({ userEmail, predictionsLocked = false }) {
+export default function AdminGoleadoresResultView({ resultsLocked = false }) {
   const { teamsByGroup, playersByTeam } = useMemo(() => {
     const rows = parseCsv(goleadoresCsv);
     const byGroup = new Map();
@@ -57,14 +56,8 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (!userEmail) {
-        skipSaveRef.current = true;
-        setPicks(normalizePicks([]));
-        lastSavedRef.current = JSON.stringify(normalizePicks([]));
-        return;
-      }
       try {
-        const r = await apiGetMyGoleadores();
+        const r = await apiAdminGetGoleadoresResult();
         if (cancelled) return;
         const normalized = normalizePicks(r?.picks ?? []);
         skipSaveRef.current = true;
@@ -72,10 +65,8 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
         lastSavedRef.current = JSON.stringify(normalized);
         setSaveStatus(null);
       } catch {
-        // Fallback: local storage (useful in dev/offline).
-        const loaded = loadGoleadores(userEmail);
         if (cancelled) return;
-        const normalized = normalizePicks(loaded.picks);
+        const normalized = normalizePicks([]);
         skipSaveRef.current = true;
         setPicks(normalized);
         lastSavedRef.current = JSON.stringify(normalized);
@@ -86,7 +77,7 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
     return () => {
       cancelled = true;
     };
-  }, [userEmail]);
+  }, []);
 
   useEffect(() => {
     if (skipSaveRef.current) {
@@ -101,22 +92,17 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
   }, [picks]);
 
   async function handleSave() {
-    if (!userEmail) return;
-    if (predictionsLocked) return;
+    if (resultsLocked) return;
     if (!isDirty) return;
     setIsSaving(true);
     setSaveStatus(null);
     try {
       const normalized = normalizePicks(picks);
-      await apiPutMyGoleadores(normalized);
+      await apiAdminPutGoleadoresResult(normalized);
       lastSavedRef.current = JSON.stringify(normalized);
       setSaveStatus("saved");
-      // Keep a local fallback copy too.
-      saveGoleadores(userEmail, normalized);
     } catch {
       setSaveStatus("error");
-      // Fallback to local storage if backend is unavailable.
-      saveGoleadores(userEmail, picks);
     } finally {
       setIsSaving(false);
     }
@@ -130,12 +116,6 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
     });
   };
 
-  const pickRows = [
-    { label: "1er goleador", idx: 0 },
-    { label: "2do goleador", idx: 1 },
-    { label: "3er goleador", idx: 2 },
-  ];
-
   const teamOptions = useMemo(() => {
     const out = [];
     Object.entries(teamsByGroup).forEach(([group, teams]) => {
@@ -144,13 +124,19 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
     return out;
   }, [teamsByGroup]);
 
+  const pickRows = [
+    { label: "1er goleador", idx: 0 },
+    { label: "2do goleador", idx: 1 },
+    { label: "3er goleador", idx: 2 },
+  ];
+
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-2xl font-black tracking-tight">Goleadores</h2>
-            <p className="text-sm text-slate-300">Elige tus 3 goleadores (equipo + jugador).</p>
+            <p className="text-sm text-slate-300">Resultados reales (admin).</p>
           </div>
           <div className="flex items-center gap-3">
             {saveStatus === "saved" ? (
@@ -162,12 +148,8 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
             ) : (
               <div className="text-xs font-semibold text-slate-400">Sin cambios</div>
             )}
-            <Button
-              variant="secondary"
-              onClick={handleSave}
-              disabled={!isDirty || isSaving || !userEmail || predictionsLocked}
-            >
-              {isSaving ? "Guardando..." : "Guardar"}
+            <Button variant="secondary" onClick={handleSave} disabled={!isDirty || isSaving || resultsLocked}>
+              {resultsLocked ? "Bloqueado" : isSaving ? "Guardando..." : "Guardar"}
             </Button>
           </div>
         </div>
@@ -186,7 +168,7 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
                     label="Equipo"
                     placeholder="Selecciona equipo"
                     value={current.team}
-                    disabled={predictionsLocked || !userEmail}
+                    disabled={resultsLocked}
                     options={teamOptions}
                     onChange={(team) => {
                       const allowed = team ? playersByTeam[team] ?? [] : [];
@@ -199,7 +181,7 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
                     label="Jugador"
                     placeholder={current.team ? "Selecciona jugador" : "Selecciona un equipo primero"}
                     value={current.player}
-                    disabled={predictionsLocked || !userEmail || !current.team}
+                    disabled={resultsLocked || !current.team}
                     searchable={players.length > 10}
                     options={players.map((p) => ({ value: p, label: p }))}
                     onChange={(player) => updatePick(idx, { player })}
@@ -213,3 +195,4 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
     </section>
   );
 }
+

@@ -3,8 +3,7 @@ import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
 import SelectMenu from "../components/SelectMenu.jsx";
 import { parseCsv } from "../utils/csv.js";
-import { apiGetMyMvp, apiPutMyMvp } from "../utils/api.js";
-import { loadMvp, saveMvp } from "../utils/mvpStorage.js";
+import { apiAdminGetMvpResult, apiAdminPutMvpResult } from "../utils/api.js";
 import jugadoresCsv from "../../data/jugadores.csv?raw";
 
 function normalizePick(pick) {
@@ -28,7 +27,7 @@ function decodeValue(value) {
   }
 }
 
-export default function MvpView({ userEmail, predictionsLocked = false }) {
+export default function AdminMvpResultView({ resultsLocked = false }) {
   const { allOptions } = useMemo(() => {
     const rows = parseCsv(jugadoresCsv);
     const byGroup = new Map();
@@ -73,14 +72,8 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (!userEmail) {
-        skipSaveRef.current = true;
-        setPick(normalizePick(null));
-        lastSavedRef.current = JSON.stringify(normalizePick(null));
-        return;
-      }
       try {
-        const r = await apiGetMyMvp();
+        const r = await apiAdminGetMvpResult();
         if (cancelled) return;
         const normalized = normalizePick(r?.pick ?? null);
         skipSaveRef.current = true;
@@ -88,9 +81,8 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
         lastSavedRef.current = JSON.stringify(normalized);
         setSaveStatus(null);
       } catch {
-        const loaded = loadMvp(userEmail);
         if (cancelled) return;
-        const normalized = normalizePick(loaded.pick);
+        const normalized = normalizePick(null);
         skipSaveRef.current = true;
         setPick(normalized);
         lastSavedRef.current = JSON.stringify(normalized);
@@ -101,7 +93,7 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
     return () => {
       cancelled = true;
     };
-  }, [userEmail]);
+  }, []);
 
   useEffect(() => {
     if (skipSaveRef.current) {
@@ -116,20 +108,17 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
   }, [pick]);
 
   async function handleSave() {
-    if (!userEmail) return;
-    if (predictionsLocked) return;
+    if (resultsLocked) return;
     if (!isDirty) return;
     setIsSaving(true);
     setSaveStatus(null);
     try {
       const normalized = normalizePick(pick);
-      await apiPutMyMvp(normalized);
+      await apiAdminPutMvpResult(normalized);
       lastSavedRef.current = JSON.stringify(normalized);
       setSaveStatus("saved");
-      saveMvp(userEmail, normalized);
     } catch {
       setSaveStatus("error");
-      saveMvp(userEmail, pick);
     } finally {
       setIsSaving(false);
     }
@@ -141,7 +130,7 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-2xl font-black tracking-tight">MVP</h2>
-            <p className="text-sm text-slate-300">Mejor jugador del torneo.</p>
+            <p className="text-sm text-slate-300">Resultado real (admin).</p>
           </div>
           <div className="flex items-center gap-3">
             {saveStatus === "saved" ? (
@@ -153,12 +142,8 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
             ) : (
               <div className="text-xs font-semibold text-slate-400">Sin cambios</div>
             )}
-            <Button
-              variant="secondary"
-              onClick={handleSave}
-              disabled={!isDirty || isSaving || !userEmail || predictionsLocked}
-            >
-              {isSaving ? "Guardando..." : "Guardar"}
+            <Button variant="secondary" onClick={handleSave} disabled={!isDirty || isSaving || resultsLocked}>
+              {resultsLocked ? "Bloqueado" : isSaving ? "Guardando..." : "Guardar"}
             </Button>
           </div>
         </div>
@@ -170,7 +155,7 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
             label="Jugador"
             placeholder="Selecciona jugador"
             value={pick.player ? encodeValue(pick.team, pick.player) : ""}
-            disabled={predictionsLocked || !userEmail}
+            disabled={resultsLocked}
             options={allOptions}
             searchable
             onChange={(val) => setPick(decodeValue(val))}
@@ -180,3 +165,4 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
     </section>
   );
 }
+

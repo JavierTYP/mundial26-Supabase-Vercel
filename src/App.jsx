@@ -17,6 +17,9 @@ import Notification from "./components/Notification.jsx";
 import AdminUsersView from "./views/AdminUsersView.jsx";
 import AdminPredictionsView from "./views/AdminPredictionsView.jsx";
 import AdminScoreboardView from "./views/AdminScoreboardView.jsx";
+import AdminGoleadoresResultView from "./views/AdminGoleadoresResultView.jsx";
+import AdminMvpResultView from "./views/AdminMvpResultView.jsx";
+import AdminZamoraResultView from "./views/AdminZamoraResultView.jsx";
 import ScoreboardView from "./views/ScoreboardView.jsx";
 import KnockoutPredictionsView from "./views/KnockoutPredictionsView.jsx";
 import ResumenView from "./views/ResumenView.jsx";
@@ -1023,6 +1026,45 @@ export default function App() {
             )
           ) : null}
 
+          {activeView === "admin-goleadores" ? (
+            isAdmin ? (
+              <AdminGoleadoresResultView resultsLocked={resultsLocked} />
+            ) : (
+              <section className="space-y-2">
+                <h2 className="text-2xl font-black tracking-tight">Acceso denegado</h2>
+                <p className="text-sm text-slate-300">
+                  Esta sección es solo para el administrador.
+                </p>
+              </section>
+            )
+          ) : null}
+
+          {activeView === "admin-mvp" ? (
+            isAdmin ? (
+              <AdminMvpResultView resultsLocked={resultsLocked} />
+            ) : (
+              <section className="space-y-2">
+                <h2 className="text-2xl font-black tracking-tight">Acceso denegado</h2>
+                <p className="text-sm text-slate-300">
+                  Esta sección es solo para el administrador.
+                </p>
+              </section>
+            )
+          ) : null}
+
+          {activeView === "admin-zamora" ? (
+            isAdmin ? (
+              <AdminZamoraResultView resultsLocked={resultsLocked} />
+            ) : (
+              <section className="space-y-2">
+                <h2 className="text-2xl font-black tracking-tight">Acceso denegado</h2>
+                <p className="text-sm text-slate-300">
+                  Esta sección es solo para el administrador.
+                </p>
+              </section>
+            )
+          ) : null}
+
           {activeView === "inicio" ? (
             <>
               <section className="space-y-4">
@@ -1234,11 +1276,15 @@ export default function App() {
             <ScoreboardView grupos={state.grupos} />
           ) : null}
 
-          {activeView === "goleadores" ? <GoleadoresView userEmail={user?.email} /> : null}
+          {activeView === "goleadores" ? (
+            <GoleadoresView userEmail={user?.email} predictionsLocked={predictionsLocked} />
+          ) : null}
 
-          {activeView === "mvp" ? <MvpView userEmail={user?.email} /> : null}
+          {activeView === "mvp" ? <MvpView userEmail={user?.email} predictionsLocked={predictionsLocked} /> : null}
 
-          {activeView === "zamora" ? <ZamoraView userEmail={user?.email} /> : null}
+          {activeView === "zamora" ? (
+            <ZamoraView userEmail={user?.email} predictionsLocked={predictionsLocked} />
+          ) : null}
 
           {activeView === "dieciseisavos" ? (
             <KnockoutRoundView

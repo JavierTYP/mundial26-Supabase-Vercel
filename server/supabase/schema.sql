@@ -23,3 +23,31 @@ create table if not exists public.mvp_picks (
 
 alter table public.mvp_picks enable row level security;
 revoke all on table public.mvp_picks from anon, authenticated;
+
+-- Admin-managed "real results" (single-row tables, id=1)
+create table if not exists public.goleadores_result (
+  id integer primary key check (id = 1),
+  picks_json jsonb not null,
+  updated_at text not null
+);
+
+alter table public.goleadores_result enable row level security;
+revoke all on table public.goleadores_result from anon, authenticated;
+
+create table if not exists public.zamora_result (
+  id integer primary key check (id = 1),
+  pick_json jsonb not null,
+  updated_at text not null
+);
+
+alter table public.zamora_result enable row level security;
+revoke all on table public.zamora_result from anon, authenticated;
+
+create table if not exists public.mvp_result (
+  id integer primary key check (id = 1),
+  pick_json jsonb not null,
+  updated_at text not null
+);
+
+alter table public.mvp_result enable row level security;
+revoke all on table public.mvp_result from anon, authenticated;

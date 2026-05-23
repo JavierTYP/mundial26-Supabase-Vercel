@@ -75,6 +75,15 @@ export default function Sidebar({
     [],
   );
 
+  const adminResultadosExtraItems = useMemo(
+    () => [
+      { id: "admin-goleadores", label: "Goleadores" },
+      { id: "admin-mvp", label: "MVP" },
+      { id: "admin-zamora", label: "Zamora" },
+    ],
+    [],
+  );
+
   return (
     <aside
       className={`h-full max-h-dvh overflow-y-auto overscroll-contain border-r border-slate-800 bg-slate-950/40 backdrop-blur ${className}`}
@@ -156,6 +165,18 @@ export default function Sidebar({
                       {item.label}
                     </NavButton>
                   ))}
+
+                  <div className="my-2 border-t border-slate-800/80" />
+
+                  {adminResultadosExtraItems.map((item) => (
+                    <NavButton
+                      key={item.id}
+                      active={activeView === item.id}
+                      onClick={() => onNavigate(item.id)}
+                    >
+                      {item.label}
+                    </NavButton>
+                  ))}
                 </div>
               ) : null}
             </>
@@ -198,7 +219,7 @@ export default function Sidebar({
                 active={activeView === "admin-scoreboard"}
                 onClick={() => onNavigate("admin-scoreboard")}
               >
-                Puntuación
+                Puntuaciones
               </NavButton>
             </>
           ) : null}

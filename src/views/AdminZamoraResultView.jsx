@@ -3,65 +3,48 @@ import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
 import SelectMenu from "../components/SelectMenu.jsx";
 import { parseCsv } from "../utils/csv.js";
-import { apiGetMyMvp, apiPutMyMvp } from "../utils/api.js";
-import { loadMvp, saveMvp } from "../utils/mvpStorage.js";
-import jugadoresCsv from "../../data/jugadores.csv?raw";
+import { apiAdminGetZamoraResult, apiAdminPutZamoraResult } from "../utils/api.js";
+import porterosCsv from "../../data/porteros.csv?raw";
 
 function normalizePick(pick) {
   const row = pick && typeof pick === "object" ? pick : {};
   return {
     team: String(row?.team ?? ""),
-    player: String(row?.player ?? ""),
+    goalkeeper: String(row?.goalkeeper ?? ""),
   };
 }
 
-function encodeValue(team, player) {
-  return JSON.stringify({ team: String(team ?? ""), player: String(player ?? "") });
-}
-
-function decodeValue(value) {
-  try {
-    const obj = JSON.parse(String(value ?? ""));
-    return normalizePick(obj);
-  } catch {
-    return normalizePick(null);
-  }
-}
-
-export default function MvpView({ userEmail, predictionsLocked = false }) {
-  const { allOptions } = useMemo(() => {
-    const rows = parseCsv(jugadoresCsv);
+export default function AdminZamoraResultView({ resultsLocked = false }) {
+  const { teamsByGroup, goalkeepersByTeam } = useMemo(() => {
+    const rows = parseCsv(porterosCsv);
     const byGroup = new Map();
+    const goalkeepers = new Map();
 
     rows.forEach((r) => {
       const grupo = String(r.grupo ?? "").trim();
       const equipo = String(r.equipo ?? "").trim();
-      const jugador = String(r.jugador ?? "").trim();
-      if (!equipo || !jugador) return;
+      const portero = String(r.portero ?? "").trim();
+      if (!equipo || !portero) return;
       const groupKey = grupo || "Otros";
-      if (!byGroup.has(groupKey)) byGroup.set(groupKey, []);
-      byGroup.get(groupKey).push({ team: equipo, player: jugador });
+      if (!byGroup.has(groupKey)) byGroup.set(groupKey, new Set());
+      byGroup.get(groupKey).add(equipo);
+      if (!goalkeepers.has(equipo)) goalkeepers.set(equipo, new Set());
+      goalkeepers.get(equipo).add(portero);
     });
 
-    const options = [];
+    const teamsByGroupObj = {};
     [...byGroup.entries()]
       .sort(([a], [b]) => a.localeCompare(b, "es"))
-      .forEach(([group, list]) => {
-        const sorted = list.sort((a, b) => {
-          const pa = `${a.player} (${a.team})`;
-          const pb = `${b.player} (${b.team})`;
-          return pa.localeCompare(pb, "es");
-        });
-        sorted.forEach((p) => {
-          options.push({
-            value: encodeValue(p.team, p.player),
-            label: `${p.player} (${p.team})`,
-            group,
-          });
-        });
+      .forEach(([group, set]) => {
+        teamsByGroupObj[group] = [...set].sort((a, b) => a.localeCompare(b, "es"));
       });
 
-    return { allOptions: options };
+    const goalkeepersByTeamObj = {};
+    [...goalkeepers.entries()].forEach(([team, set]) => {
+      goalkeepersByTeamObj[team] = [...set].sort((a, b) => a.localeCompare(b, "es"));
+    });
+
+    return { teamsByGroup: teamsByGroupObj, goalkeepersByTeam: goalkeepersByTeamObj };
   }, []);
 
   const [pick, setPick] = useState(() => normalizePick(null));
@@ -73,14 +56,8 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (!userEmail) {
-        skipSaveRef.current = true;
-        setPick(normalizePick(null));
-        lastSavedRef.current = JSON.stringify(normalizePick(null));
-        return;
-      }
       try {
-        const r = await apiGetMyMvp();
+        const r = await apiAdminGetZamoraResult();
         if (cancelled) return;
         const normalized = normalizePick(r?.pick ?? null);
         skipSaveRef.current = true;
@@ -88,9 +65,8 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
         lastSavedRef.current = JSON.stringify(normalized);
         setSaveStatus(null);
       } catch {
-        const loaded = loadMvp(userEmail);
         if (cancelled) return;
-        const normalized = normalizePick(loaded.pick);
+        const normalized = normalizePick(null);
         skipSaveRef.current = true;
         setPick(normalized);
         lastSavedRef.current = JSON.stringify(normalized);
@@ -101,7 +77,7 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
     return () => {
       cancelled = true;
     };
-  }, [userEmail]);
+  }, []);
 
   useEffect(() => {
     if (skipSaveRef.current) {
@@ -116,32 +92,38 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
   }, [pick]);
 
   async function handleSave() {
-    if (!userEmail) return;
-    if (predictionsLocked) return;
+    if (resultsLocked) return;
     if (!isDirty) return;
     setIsSaving(true);
     setSaveStatus(null);
     try {
       const normalized = normalizePick(pick);
-      await apiPutMyMvp(normalized);
+      await apiAdminPutZamoraResult(normalized);
       lastSavedRef.current = JSON.stringify(normalized);
       setSaveStatus("saved");
-      saveMvp(userEmail, normalized);
     } catch {
       setSaveStatus("error");
-      saveMvp(userEmail, pick);
     } finally {
       setIsSaving(false);
     }
   }
+
+  const keepers = pick.team ? goalkeepersByTeam[pick.team] ?? [] : [];
+  const teamOptions = useMemo(() => {
+    const out = [];
+    Object.entries(teamsByGroup).forEach(([group, teams]) => {
+      teams.forEach((team) => out.push({ value: team, label: team, group }));
+    });
+    return out;
+  }, [teamsByGroup]);
 
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-2xl font-black tracking-tight">MVP</h2>
-            <p className="text-sm text-slate-300">Mejor jugador del torneo.</p>
+            <h2 className="text-2xl font-black tracking-tight">Zamora</h2>
+            <p className="text-sm text-slate-300">Resultado real (admin).</p>
           </div>
           <div className="flex items-center gap-3">
             {saveStatus === "saved" ? (
@@ -153,30 +135,40 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
             ) : (
               <div className="text-xs font-semibold text-slate-400">Sin cambios</div>
             )}
-            <Button
-              variant="secondary"
-              onClick={handleSave}
-              disabled={!isDirty || isSaving || !userEmail || predictionsLocked}
-            >
-              {isSaving ? "Guardando..." : "Guardar"}
+            <Button variant="secondary" onClick={handleSave} disabled={!isDirty || isSaving || resultsLocked}>
+              {resultsLocked ? "Bloqueado" : isSaving ? "Guardando..." : "Guardar"}
             </Button>
           </div>
         </div>
       </div>
 
       <Card className="p-4">
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <SelectMenu
-            label="Jugador"
-            placeholder="Selecciona jugador"
-            value={pick.player ? encodeValue(pick.team, pick.player) : ""}
-            disabled={predictionsLocked || !userEmail}
-            options={allOptions}
-            searchable
-            onChange={(val) => setPick(decodeValue(val))}
+            label="Equipo"
+            placeholder="Selecciona equipo"
+            value={pick.team}
+            disabled={resultsLocked}
+            options={teamOptions}
+            onChange={(team) => {
+              const allowed = team ? goalkeepersByTeam[team] ?? [] : [];
+              const nextKeeper = allowed.includes(pick.goalkeeper) ? pick.goalkeeper : "";
+              setPick((prev) => ({ ...prev, team, goalkeeper: nextKeeper }));
+            }}
+          />
+
+          <SelectMenu
+            label="Portero"
+            placeholder={pick.team ? "Selecciona portero" : "Selecciona un equipo primero"}
+            value={pick.goalkeeper}
+            disabled={resultsLocked || !pick.team}
+            searchable={keepers.length > 10}
+            options={keepers.map((gk) => ({ value: gk, label: gk }))}
+            onChange={(goalkeeper) => setPick((prev) => ({ ...prev, goalkeeper }))}
           />
         </div>
       </Card>
     </section>
   );
 }
+

@@ -15,7 +15,7 @@ function normalizePick(pick) {
   };
 }
 
-export default function ZamoraView({ userEmail }) {
+export default function ZamoraView({ userEmail, predictionsLocked = false }) {
   const { teamsByGroup, goalkeepersByTeam } = useMemo(() => {
     const rows = parseCsv(porterosCsv);
     const byGroup = new Map();
@@ -101,6 +101,7 @@ export default function ZamoraView({ userEmail }) {
 
   async function handleSave() {
     if (!userEmail) return;
+    if (predictionsLocked) return;
     if (!isDirty) return;
     setIsSaving(true);
     setSaveStatus(null);
@@ -145,7 +146,11 @@ export default function ZamoraView({ userEmail }) {
             ) : (
               <div className="text-xs font-semibold text-slate-400">Sin cambios</div>
             )}
-            <Button variant="secondary" onClick={handleSave} disabled={!isDirty || isSaving || !userEmail}>
+            <Button
+              variant="secondary"
+              onClick={handleSave}
+              disabled={!isDirty || isSaving || !userEmail || predictionsLocked}
+            >
               {isSaving ? "Guardando..." : "Guardar"}
             </Button>
           </div>
@@ -158,6 +163,7 @@ export default function ZamoraView({ userEmail }) {
             label="Equipo"
             placeholder="Selecciona equipo"
             value={pick.team}
+            disabled={predictionsLocked || !userEmail}
             options={teamOptions}
             onChange={(team) => {
               const allowed = team ? goalkeepersByTeam[team] ?? [] : [];
@@ -170,7 +176,7 @@ export default function ZamoraView({ userEmail }) {
             label="Portero"
             placeholder={pick.team ? "Selecciona portero" : "Selecciona un equipo primero"}
             value={pick.goalkeeper}
-            disabled={!pick.team}
+            disabled={predictionsLocked || !userEmail || !pick.team}
             searchable={keepers.length > 10}
             options={keepers.map((gk) => ({ value: gk, label: gk }))}
             onChange={(goalkeeper) => setPick((prev) => ({ ...prev, goalkeeper }))}

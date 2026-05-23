@@ -74,13 +74,28 @@ export async function createDb() {
       picks_json TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS goleadores_result (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      picks_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS zamora_picks (
       email TEXT PRIMARY KEY,
       pick_json TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS zamora_result (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      pick_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS mvp_picks (
       email TEXT PRIMARY KEY,
+      pick_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS mvp_result (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
       pick_json TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -166,13 +181,28 @@ async function createPgDb() {
       picks_json JSONB NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS goleadores_result (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      picks_json JSONB NOT NULL,
+      updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS zamora_picks (
       email TEXT PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
       pick_json JSONB NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS zamora_result (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      pick_json JSONB NOT NULL,
+      updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS mvp_picks (
       email TEXT PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
+      pick_json JSONB NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS mvp_result (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
       pick_json JSONB NOT NULL,
       updated_at TEXT NOT NULL
     );

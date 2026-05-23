@@ -95,6 +95,39 @@ export function apiAdminUsers() {
   return apiFetch("/api/admin/users", { method: "GET" });
 }
 
+export function apiAdminGetGoleadoresResult() {
+  return apiFetch("/api/admin/goleadores-result", { method: "GET" });
+}
+
+export function apiAdminPutGoleadoresResult(picks) {
+  return apiFetch("/api/admin/goleadores-result", {
+    method: "PUT",
+    body: JSON.stringify({ picks }),
+  });
+}
+
+export function apiAdminGetZamoraResult() {
+  return apiFetch("/api/admin/zamora-result", { method: "GET" });
+}
+
+export function apiAdminPutZamoraResult(pick) {
+  return apiFetch("/api/admin/zamora-result", {
+    method: "PUT",
+    body: JSON.stringify({ pick }),
+  });
+}
+
+export function apiAdminGetMvpResult() {
+  return apiFetch("/api/admin/mvp-result", { method: "GET" });
+}
+
+export function apiAdminPutMvpResult(pick) {
+  return apiFetch("/api/admin/mvp-result", {
+    method: "PUT",
+    body: JSON.stringify({ pick }),
+  });
+}
+
 export function apiAdminDeleteUser(email) {
   return apiFetch(`/api/admin/users/${encodeURIComponent(email)}`, { method: "DELETE" });
 }

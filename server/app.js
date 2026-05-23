@@ -479,6 +479,10 @@ app.get("/api/goleadores/me", async (req, res) => {
 
 app.put("/api/goleadores/me", async (req, res) => {
   if (!requireAuth(req, res)) return;
+  if (await getPredictionsLocked()) {
+    res.status(409).json({ error: "predictions_locked" });
+    return;
+  }
   const email = req.user.email;
   const picks = normalizeGoleadoresPicks(req.body?.picks);
   const updatedAt = new Date().toISOString();
@@ -510,6 +514,10 @@ app.get("/api/zamora/me", async (req, res) => {
 
 app.put("/api/zamora/me", async (req, res) => {
   if (!requireAuth(req, res)) return;
+  if (await getPredictionsLocked()) {
+    res.status(409).json({ error: "predictions_locked" });
+    return;
+  }
   const email = req.user.email;
   const pick = normalizeZamoraPick(req.body?.pick);
   const updatedAt = new Date().toISOString();
@@ -541,6 +549,10 @@ app.get("/api/mvp/me", async (req, res) => {
 
 app.put("/api/mvp/me", async (req, res) => {
   if (!requireAuth(req, res)) return;
+  if (await getPredictionsLocked()) {
+    res.status(409).json({ error: "predictions_locked" });
+    return;
+  }
   const email = req.user.email;
   const pick = normalizeMvpPick(req.body?.pick);
   const updatedAt = new Date().toISOString();
@@ -549,6 +561,99 @@ app.put("/api/mvp/me", async (req, res) => {
     db,
     "INSERT INTO mvp_picks (email, pick_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET pick_json=excluded.pick_json, updated_at=excluded.updated_at",
     [email, pickValue, updatedAt],
+  );
+  persistDb(db);
+  res.json({ ok: true, updatedAt });
+});
+
+app.get("/api/admin/goleadores-result", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const row = await dbGet(db, "SELECT picks_json, updated_at FROM goleadores_result WHERE id = 1", []);
+  const picksRaw = row?.picks_json ?? null;
+  const picks =
+    picksRaw && typeof picksRaw === "string"
+      ? jsonOrNull(picksRaw)
+      : picksRaw && typeof picksRaw === "object"
+        ? picksRaw
+        : null;
+  res.json({ picks: normalizeGoleadoresPicks(picks), updatedAt: row?.updated_at ?? null });
+});
+
+app.put("/api/admin/goleadores-result", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (await getResultsLocked()) {
+    res.status(409).json({ error: "results_locked" });
+    return;
+  }
+  const picks = normalizeGoleadoresPicks(req.body?.picks);
+  const updatedAt = new Date().toISOString();
+  const picksValue = db?.__dbKind === "pg" ? picks : JSON.stringify(picks);
+  await dbRun(
+    db,
+    "INSERT INTO goleadores_result (id, picks_json, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET picks_json=excluded.picks_json, updated_at=excluded.updated_at",
+    [picksValue, updatedAt],
+  );
+  persistDb(db);
+  res.json({ ok: true, updatedAt });
+});
+
+app.get("/api/admin/zamora-result", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const row = await dbGet(db, "SELECT pick_json, updated_at FROM zamora_result WHERE id = 1", []);
+  const pickRaw = row?.pick_json ?? null;
+  const pick =
+    pickRaw && typeof pickRaw === "string"
+      ? jsonOrNull(pickRaw)
+      : pickRaw && typeof pickRaw === "object"
+        ? pickRaw
+        : null;
+  res.json({ pick: normalizeZamoraPick(pick), updatedAt: row?.updated_at ?? null });
+});
+
+app.put("/api/admin/zamora-result", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (await getResultsLocked()) {
+    res.status(409).json({ error: "results_locked" });
+    return;
+  }
+  const pick = normalizeZamoraPick(req.body?.pick);
+  const updatedAt = new Date().toISOString();
+  const pickValue = db?.__dbKind === "pg" ? pick : JSON.stringify(pick);
+  await dbRun(
+    db,
+    "INSERT INTO zamora_result (id, pick_json, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET pick_json=excluded.pick_json, updated_at=excluded.updated_at",
+    [pickValue, updatedAt],
+  );
+  persistDb(db);
+  res.json({ ok: true, updatedAt });
+});
+
+app.get("/api/admin/mvp-result", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const row = await dbGet(db, "SELECT pick_json, updated_at FROM mvp_result WHERE id = 1", []);
+  const pickRaw = row?.pick_json ?? null;
+  const pick =
+    pickRaw && typeof pickRaw === "string"
+      ? jsonOrNull(pickRaw)
+      : pickRaw && typeof pickRaw === "object"
+        ? pickRaw
+        : null;
+  res.json({ pick: normalizeMvpPick(pick), updatedAt: row?.updated_at ?? null });
+});
+
+app.put("/api/admin/mvp-result", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (await getResultsLocked()) {
+    res.status(409).json({ error: "results_locked" });
+    return;
+  }
+  const pick = normalizeMvpPick(req.body?.pick);
+  const updatedAt = new Date().toISOString();
+  const pickValue = db?.__dbKind === "pg" ? pick : JSON.stringify(pick);
+  await dbRun(
+    db,
+    "INSERT INTO mvp_result (id, pick_json, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET pick_json=excluded.pick_json, updated_at=excluded.updated_at",
+    [pickValue, updatedAt],
   );
   persistDb(db);
   res.json({ ok: true, updatedAt });
