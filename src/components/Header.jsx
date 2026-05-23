@@ -76,14 +76,14 @@ export default function Header({
 
         <div className="flex flex-wrap items-center gap-2">
           {userEmail ? (
-            <div className="mr-2 hidden items-center gap-2 text-xs text-slate-300 md:flex">
-              <span className="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">
+            <div className="mr-2 flex w-full min-w-0 items-center gap-2 text-xs text-slate-300 md:w-auto">
+              <span className="min-w-0 flex-1 truncate rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1">
                 {userEmail}
               </span>
               {onLogout ? (
                 <button
                   type="button"
-                  className="rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-1 font-bold uppercase tracking-wide text-slate-200 hover:bg-slate-900/70"
+                  className="shrink-0 rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-1 font-bold uppercase tracking-wide text-slate-200 hover:bg-slate-900/70"
                   onClick={onLogout}
                 >
                   Salir
