@@ -69,6 +69,28 @@ export function apiPutMyGoleadores(picks) {
   });
 }
 
+export function apiGetMyZamora() {
+  return apiFetch("/api/zamora/me", { method: "GET" });
+}
+
+export function apiPutMyZamora(pick) {
+  return apiFetch("/api/zamora/me", {
+    method: "PUT",
+    body: JSON.stringify({ pick }),
+  });
+}
+
+export function apiGetMyMvp() {
+  return apiFetch("/api/mvp/me", { method: "GET" });
+}
+
+export function apiPutMyMvp(pick) {
+  return apiFetch("/api/mvp/me", {
+    method: "PUT",
+    body: JSON.stringify({ pick }),
+  });
+}
+
 export function apiAdminUsers() {
   return apiFetch("/api/admin/users", { method: "GET" });
 }

@@ -1,0 +1,145 @@
+grupo,equipo,portero
+Grupo A,México,Carlos Acevedo
+Grupo A,México,Raúl Rangel
+Grupo A,México,Guillermo Ochoa
+Grupo A,Sudáfrica,Ronwen Williams
+Grupo A,Sudáfrica,Veli Mothwa
+Grupo A,Sudáfrica,Lawrence Maponya
+Grupo A,Corea del Sur,Jo Hyeon-woo
+Grupo A,Corea del Sur,Kim Seung-gyu
+Grupo A,Corea del Sur,Lee Jin-hyeon
+Grupo A,República Checa,Tomáš Vaclík
+Grupo A,República Checa,Matěj Kovář
+Grupo A,República Checa,Jiří Pavlenka
+Grupo B,Canadá,Maxime Crépeau
+Grupo B,Canadá,Dayne St. Clair
+Grupo B,Canadá,Jayson Leutwiler
+Grupo B,Bosnia y Herzegovina,Nikola Vasilj
+Grupo B,Bosnia y Herzegovina,Dino Begović
+Grupo B,Bosnia y Herzegovina,Lovren Jerković
+Grupo B,Qatar,Saad Al-Sheeb
+Grupo B,Qatar,Nawaf Al-Adsani
+Grupo B,Qatar,Ayouni Jebali
+Grupo B,Suiza,Yann Sommer
+Grupo B,Suiza,Philipp Köhn
+Grupo B,Suiza,Gregor Kobel
+Grupo C,Brasil,Alisson
+Grupo C,Brasil,Ederson
+Grupo C,Brasil,Weverton
+Grupo C,Marruecos,Yassine Bounou
+Grupo C,Marruecos,Munir El Kajoui
+Grupo C,Marruecos,Ahmed Reda Tagnaouti
+Grupo C,Haití,Johnny Placide
+Grupo C,Haití,Alexandre Pierre
+Grupo C,Haití,Josué Duverger
+Grupo C,Escocia,Craig Gordon
+Grupo C,Escocia,Angus Gunn
+Grupo C,Escocia,Liam Kelly
+Grupo D,Estados Unidos,Matt Turner
+Grupo D,Estados Unidos,Ethan Horvath
+Grupo D,Estados Unidos,Sean Johnson
+Grupo D,Paraguay,Alfredo Talavera
+Grupo D,Paraguay,Antony Silva
+Grupo D,Paraguay,Roberto Fernández
+Grupo D,Australia,Matt Ryan
+Grupo D,Australia,Danny Vukovic
+Grupo D,Australia,Adam Federici
+Grupo D,Turquía,Ege Uğurlu
+Grupo D,Turquía,Dogan Alemdar
+Grupo D,Turquía,Ertuğrul Çetin
+Grupo E,Alemania,Manuel Neuer
+Grupo E,Alemania,Bernd Baumann
+Grupo E,Alemania,Alexander Nübel
+Grupo E,Curazao,Eloy Room
+Grupo E,Curazao,Jorn Otten
+Grupo E,Curazao,Nick Marsman
+Grupo E,Costa de Marfil,Alassane Gory
+Grupo E,Costa de Marfil,Sylvain Gbohouo
+Grupo E,Costa de Marfil,Hervé Koffi
+Grupo E,Ecuador,Hernán Galíndez
+Grupo E,Ecuador,Alexander Domínguez
+Grupo E,Ecuador,Moisés Ramírez
+Grupo F,Países Bajos,Justin Bijlow
+Grupo F,Países Bajos,Andries Noppert
+Grupo F,Países Bajos,Remko Pasveer
+Grupo F,Japón,Tomoki Hayakawa
+Grupo F,Japón,Keisuke Osako
+Grupo F,Japón,Zion Suzuki
+Grupo F,Suecia,Viktor Johansson
+Grupo F,Suecia,Kristoffer Nordfeldt
+Grupo F,Suecia,Jacob Widell Zetterström
+Grupo F,Túnez,Aymen Dahmen
+Grupo F,Túnez,Bechir Ben Said
+Grupo F,Túnez,Mouhamed Dhaouadi
+Grupo G,Bélgica,Thibaut Courtois
+Grupo G,Bélgica,Senne Lammens
+Grupo G,Bélgica,Mike Penders
+Grupo G,Egipto,Mohamed El Shenawy
+Grupo G,Egipto,Gabaski
+Grupo G,Egipto,Darwish Hassan
+Grupo G,Irán,Alireza Niaraki
+Grupo G,Irán,Payam Niazmand
+Grupo G,Irán,Atalanta Pierluigi Gollini
+Grupo G,Nueva Zelanda,Stefan Marinovic
+Grupo G,Nueva Zelanda,Evan Francomb
+Grupo G,Nueva Zelanda,Alex Paulsen
+Grupo H,España,Unai Simón
+Grupo H,España,David Raya
+Grupo H,España,Álex Remiro
+Grupo H,Cabo Verde,Zílson
+Grupo H,Cabo Verde,Léo Jardim
+Grupo H,Cabo Verde,Márcio Sousa
+Grupo H,Arabia Saudita,Mohammed Al-Owais
+Grupo H,Arabia Saudita,Nawaf Al-Adsani
+Grupo H,Arabia Saudita,Youssef Al-Yami
+Grupo H,Uruguay,Sergio Rochet
+Grupo H,Uruguay,Panchín Rodríguez
+Grupo H,Uruguay,Franco Israel
+Grupo I,Francia,Mike Maignan
+Grupo I,Francia,Robin Risser
+Grupo I,Francia,Brice Samba
+Grupo I,Senegal,Édouard Mendy
+Grupo I,Senegal,Seny Dieng
+Grupo I,Senegal,Fallou Sène
+Grupo I,Irak,Mkhalel Madeer
+Grupo I,Irak,Jalal Hassan
+Grupo I,Irak,Rasheed Mijbil
+Grupo I,Noruega,André Hansen
+Grupo I,Noruega,Rune Almenning Jarstein
+Grupo I,Noruega,Ivar Viggo Kristiansen
+Grupo J,Argentina,Emiliano Martínez
+Grupo J,Argentina,Gerónimo Rulli
+Grupo J,Argentina,Juan Musso
+Grupo J,Argelia,Rais Mbolhi
+Grupo J,Argelia,Oussama Benbot
+Grupo J,Argelia,Tayeb Mezab
+Grupo J,Austria,Patrick Pentz
+Grupo J,Austria,Alexander Schlager
+Grupo J,Austria,Dario Maresic
+Grupo J,Jordania,Yazeed Al-Rasheed
+Grupo J,Jordania,Salamah Al-Rasheed
+Grupo J,Jordania,Amer Shafi Al-Rasheed
+Grupo K,Portugal,Diogo Costa
+Grupo K,Portugal,José Sá
+Grupo K,Portugal,Rui Silva
+Grupo K,RD Congo,Jean-Philippe Mpondo
+Grupo K,RD Congo,Merlin Mbongo
+Grupo K,RD Congo,Patrício Chikera
+Grupo K,Uzbekistán,Samir Kermenbekov
+Grupo K,Uzbekistán,Andriy Lunin
+Grupo K,Uzbekistán,Akmal Imamnazarov
+Grupo K,Colombia,David Ospina
+Grupo K,Colombia,Kevin Mier
+Grupo K,Colombia,Álvaro Montero
+Grupo L,Inglaterra,Jordan Pickford
+Grupo L,Inglaterra,Dean Henderson
+Grupo L,Inglaterra,James Trafford
+Grupo L,Croacia,Nikola Vasilj
+Grupo L,Croacia,Martin Zlomislić
+Grupo L,Croacia,Osman Hadžikić
+Grupo L,Ghana,Richard Ofori
+Grupo L,Ghana,Jojo Wollacott
+Grupo L,Ghana,Manaf Nurudeen
+Grupo L,Panamá,Roberto Carla
+Grupo L,Panamá,José Luis Rodríguez
+Grupo L,Panamá,Domingo Valdés

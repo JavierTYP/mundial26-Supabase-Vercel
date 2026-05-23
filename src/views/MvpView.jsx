@@ -1,0 +1,183 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import Card from "../components/Card.jsx";
+import Button from "../components/Button.jsx";
+import { parseCsv } from "../utils/csv.js";
+import { apiGetMyMvp, apiPutMyMvp } from "../utils/api.js";
+import { loadMvp, saveMvp } from "../utils/mvpStorage.js";
+import jugadoresCsv from "../../data/jugadores.csv?raw";
+
+const selectBase =
+  "w-full rounded-xl border border-slate-700/80 bg-slate-950/30 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-blue-500/30";
+
+function normalizePick(pick) {
+  const row = pick && typeof pick === "object" ? pick : {};
+  return {
+    team: String(row?.team ?? ""),
+    player: String(row?.player ?? ""),
+  };
+}
+
+function encodeValue(team, player) {
+  return JSON.stringify({ team: String(team ?? ""), player: String(player ?? "") });
+}
+
+function decodeValue(value) {
+  try {
+    const obj = JSON.parse(String(value ?? ""));
+    return normalizePick(obj);
+  } catch {
+    return normalizePick(null);
+  }
+}
+
+export default function MvpView({ userEmail }) {
+  const { playersByGroup } = useMemo(() => {
+    const rows = parseCsv(jugadoresCsv);
+    const byGroup = new Map();
+
+    rows.forEach((r) => {
+      const grupo = String(r.grupo ?? "").trim();
+      const equipo = String(r.equipo ?? "").trim();
+      const jugador = String(r.jugador ?? "").trim();
+      if (!equipo || !jugador) return;
+      const groupKey = grupo || "Otros";
+      if (!byGroup.has(groupKey)) byGroup.set(groupKey, []);
+      byGroup.get(groupKey).push({ team: equipo, player: jugador });
+    });
+
+    const playersByGroupObj = {};
+    [...byGroup.entries()]
+      .sort(([a], [b]) => a.localeCompare(b, "es"))
+      .forEach(([group, list]) => {
+        playersByGroupObj[group] = list.sort((a, b) => {
+          const pa = `${a.player} (${a.team})`;
+          const pb = `${b.player} (${b.team})`;
+          return pa.localeCompare(pb, "es");
+        });
+      });
+
+    return { playersByGroup: playersByGroupObj };
+  }, []);
+
+  const [pick, setPick] = useState(() => normalizePick(null));
+  const skipSaveRef = useRef(true);
+  const lastSavedRef = useRef(JSON.stringify(normalizePick(null)));
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // "saved" | "error" | null
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!userEmail) {
+        skipSaveRef.current = true;
+        setPick(normalizePick(null));
+        lastSavedRef.current = JSON.stringify(normalizePick(null));
+        return;
+      }
+      try {
+        const r = await apiGetMyMvp();
+        if (cancelled) return;
+        const normalized = normalizePick(r?.pick ?? null);
+        skipSaveRef.current = true;
+        setPick(normalized);
+        lastSavedRef.current = JSON.stringify(normalized);
+        setSaveStatus(null);
+      } catch {
+        const loaded = loadMvp(userEmail);
+        if (cancelled) return;
+        const normalized = normalizePick(loaded.pick);
+        skipSaveRef.current = true;
+        setPick(normalized);
+        lastSavedRef.current = JSON.stringify(normalized);
+        setSaveStatus(null);
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [userEmail]);
+
+  useEffect(() => {
+    if (skipSaveRef.current) {
+      skipSaveRef.current = false;
+      return;
+    }
+    setSaveStatus(null);
+  }, [pick]);
+
+  const isDirty = useMemo(() => {
+    return JSON.stringify(normalizePick(pick)) !== lastSavedRef.current;
+  }, [pick]);
+
+  async function handleSave() {
+    if (!userEmail) return;
+    if (!isDirty) return;
+    setIsSaving(true);
+    setSaveStatus(null);
+    try {
+      const normalized = normalizePick(pick);
+      await apiPutMyMvp(normalized);
+      lastSavedRef.current = JSON.stringify(normalized);
+      setSaveStatus("saved");
+      saveMvp(userEmail, normalized);
+    } catch {
+      setSaveStatus("error");
+      saveMvp(userEmail, pick);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-2xl font-black tracking-tight">MVP</h2>
+            <p className="text-sm text-slate-300">Mejor jugador del torneo.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {saveStatus === "saved" ? (
+              <div className="text-xs font-semibold text-emerald-300">Guardado</div>
+            ) : saveStatus === "error" ? (
+              <div className="text-xs font-semibold text-rose-300">No se pudo guardar</div>
+            ) : isDirty ? (
+              <div className="text-xs font-semibold text-amber-300">Cambios sin guardar</div>
+            ) : (
+              <div className="text-xs font-semibold text-slate-400">Sin cambios</div>
+            )}
+            <Button variant="secondary" onClick={handleSave} disabled={!isDirty || isSaving || !userEmail}>
+              {isSaving ? "Guardando..." : "Guardar"}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Card className="p-4">
+        <div className="grid gap-3">
+          <label className="grid gap-2">
+            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Jugador</span>
+            <select
+              className={selectBase}
+              value={pick.player ? encodeValue(pick.team, pick.player) : ""}
+              onChange={(e) => setPick(decodeValue(e.target.value))}
+            >
+              <option value="">Selecciona jugador</option>
+              {Object.entries(playersByGroup).map(([group, list]) => (
+                <optgroup key={group} label={group}>
+                  {list.map((p) => (
+                    <option key={`${p.team}::${p.player}`} value={encodeValue(p.team, p.player)}>
+                      {p.player} ({p.team})
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+        </div>
+      </Card>
+    </section>
+  );
+}
+

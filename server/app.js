@@ -451,6 +451,20 @@ function normalizeGoleadoresPicks(picks) {
   return out;
 }
 
+function normalizeZamoraPick(pick) {
+  const row = pick && typeof pick === "object" ? pick : {};
+  const team = String(row?.team ?? "").trim();
+  const goalkeeper = String(row?.goalkeeper ?? "").trim();
+  return { team, goalkeeper };
+}
+
+function normalizeMvpPick(pick) {
+  const row = pick && typeof pick === "object" ? pick : {};
+  const team = String(row?.team ?? "").trim();
+  const player = String(row?.player ?? "").trim();
+  return { team, player };
+}
+
 app.get("/api/goleadores/me", async (req, res) => {
   if (!requireAuth(req, res)) return;
   const email = req.user.email;
@@ -473,6 +487,68 @@ app.put("/api/goleadores/me", async (req, res) => {
     db,
     "INSERT INTO goleadores_picks (email, picks_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET picks_json=excluded.picks_json, updated_at=excluded.updated_at",
     [email, picksValue, updatedAt],
+  );
+  persistDb(db);
+  res.json({ ok: true, updatedAt });
+});
+
+app.get("/api/zamora/me", async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  const email = req.user.email;
+  const row = await dbGet(db, "SELECT pick_json, updated_at FROM zamora_picks WHERE email = ?", [
+    email,
+  ]);
+  const pickRaw = row?.pick_json ?? null;
+  const pick =
+    pickRaw && typeof pickRaw === "string"
+      ? jsonOrNull(pickRaw)
+      : pickRaw && typeof pickRaw === "object"
+        ? pickRaw
+        : null;
+  res.json({ email, pick: normalizeZamoraPick(pick), updatedAt: row?.updated_at ?? null });
+});
+
+app.put("/api/zamora/me", async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  const email = req.user.email;
+  const pick = normalizeZamoraPick(req.body?.pick);
+  const updatedAt = new Date().toISOString();
+  const pickValue = db?.__dbKind === "pg" ? pick : JSON.stringify(pick);
+  await dbRun(
+    db,
+    "INSERT INTO zamora_picks (email, pick_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET pick_json=excluded.pick_json, updated_at=excluded.updated_at",
+    [email, pickValue, updatedAt],
+  );
+  persistDb(db);
+  res.json({ ok: true, updatedAt });
+});
+
+app.get("/api/mvp/me", async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  const email = req.user.email;
+  const row = await dbGet(db, "SELECT pick_json, updated_at FROM mvp_picks WHERE email = ?", [
+    email,
+  ]);
+  const pickRaw = row?.pick_json ?? null;
+  const pick =
+    pickRaw && typeof pickRaw === "string"
+      ? jsonOrNull(pickRaw)
+      : pickRaw && typeof pickRaw === "object"
+        ? pickRaw
+        : null;
+  res.json({ email, pick: normalizeMvpPick(pick), updatedAt: row?.updated_at ?? null });
+});
+
+app.put("/api/mvp/me", async (req, res) => {
+  if (!requireAuth(req, res)) return;
+  const email = req.user.email;
+  const pick = normalizeMvpPick(req.body?.pick);
+  const updatedAt = new Date().toISOString();
+  const pickValue = db?.__dbKind === "pg" ? pick : JSON.stringify(pick);
+  await dbRun(
+    db,
+    "INSERT INTO mvp_picks (email, pick_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET pick_json=excluded.pick_json, updated_at=excluded.updated_at",
+    [email, pickValue, updatedAt],
   );
   persistDb(db);
   res.json({ ok: true, updatedAt });

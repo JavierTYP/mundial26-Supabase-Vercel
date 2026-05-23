@@ -112,6 +112,14 @@ export default function Sidebar({
               >
                 Goleadores
               </NavButton>
+
+              <NavButton active={activeView === "mvp"} onClick={() => onNavigate("mvp")}>
+                MVP
+              </NavButton>
+
+              <NavButton active={activeView === "zamora"} onClick={() => onNavigate("zamora")}>
+                Zamora
+              </NavButton>
             </>
           ) : null}
 

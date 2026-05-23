@@ -11,6 +11,8 @@ La persistencia puede ser:
 - SQLite local (por defecto, `data/app.sqlite`)
 - PostgreSQL (Supabase) vía `DATABASE_URL` (o `DB_MODE=postgres`)
 
+En modo PostgreSQL, el backend usa tablas como `goleadores_picks`, `zamora_picks` y `mvp_picks`. Si en Supabase no quieres/puedes que la app cree tablas, ejecuta `server/supabase/schema.sql` en el SQL Editor.
+
 ## Requisitos
 - Node.js 18+ (recomendado 20+)
 

@@ -21,6 +21,8 @@ import ScoreboardView from "./views/ScoreboardView.jsx";
 import KnockoutPredictionsView from "./views/KnockoutPredictionsView.jsx";
 import ResumenView from "./views/ResumenView.jsx";
 import GoleadoresView from "./views/GoleadoresView.jsx";
+import ZamoraView from "./views/ZamoraView.jsx";
+import MvpView from "./views/MvpView.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 import { advanceRound, buildDieciseisavos, winnerId } from "./utils/knockout.js";
@@ -1233,6 +1235,10 @@ export default function App() {
           ) : null}
 
           {activeView === "goleadores" ? <GoleadoresView userEmail={user?.email} /> : null}
+
+          {activeView === "mvp" ? <MvpView userEmail={user?.email} /> : null}
+
+          {activeView === "zamora" ? <ZamoraView userEmail={user?.email} /> : null}
 
           {activeView === "dieciseisavos" ? (
             <KnockoutRoundView
