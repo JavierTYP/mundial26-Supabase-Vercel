@@ -6,6 +6,7 @@ export default function AdminUsersView({
   users,
   onDeleteUser,
   onClearNonAdminUsers,
+  onSetUserPaid,
   predictionsLocked,
   onTogglePredictionsLocked,
   resultsLocked,
@@ -16,7 +17,7 @@ export default function AdminUsersView({
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-black tracking-tight">Usuarios</h2>
         <p className="text-sm text-slate-300">
-          Administración local (se guarda en tu navegador).
+          Administración (usuarios en base de datos).
         </p>
       </div>
 
@@ -37,7 +38,7 @@ export default function AdminUsersView({
           variant="danger"
           onClick={() => {
             // eslint-disable-next-line no-alert
-            if (!confirm("Â¿Borrar todos los usuarios no-admin?")) return;
+            if (!confirm("¿Borrar todos los usuarios no-admin?")) return;
             onClearNonAdminUsers();
           }}
         >
@@ -65,16 +66,26 @@ export default function AdminUsersView({
                       </div>
                     ) : null}
                     <div className="text-xs text-slate-400">
-                      {isAdmin ? "admin" : "user"} Â· creado {u.createdAt ?? "â€”"}
+                      {isAdmin ? "admin" : "user"} · creado {u.createdAt ?? "—"}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 accent-red-500"
+                        checked={Boolean(u.paid)}
+                        disabled={!onSetUserPaid}
+                        onChange={(e) => onSetUserPaid?.(u.email, e.target.checked)}
+                      />
+                      Paid
+                    </label>
                     <Button
                       variant="secondary"
                       disabled={isAdmin}
                       onClick={() => {
                         // eslint-disable-next-line no-alert
-                        if (!confirm(`Â¿Borrar usuario ${u.email}?`)) return;
+                        if (!confirm(`¿Borrar usuario ${u.email}?`)) return;
                         onDeleteUser(u.email);
                       }}
                     >

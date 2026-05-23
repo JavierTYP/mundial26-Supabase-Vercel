@@ -189,14 +189,20 @@ export default function Sidebar({
             Clasificación
           </NavButton>
 
-          {!isAdmin ? (
-            <NavButton
-              active={activeView === "puntuaciones"}
-              onClick={() => onNavigate("puntuaciones")}
-            >
-              Puntuaciones
-            </NavButton>
-          ) : null}
+          <NavButton active={activeView === "resumen"} onClick={() => onNavigate("resumen")}>
+            Resumen
+          </NavButton>
+
+          <NavButton
+            active={activeView === "puntuaciones"}
+            onClick={() => onNavigate("puntuaciones")}
+          >
+            Puntuaciones
+          </NavButton>
+
+          <NavButton active={activeView === "premios"} onClick={() => onNavigate("premios")}>
+            Premios
+          </NavButton>
 
           {isAdmin ? (
             <>
@@ -219,14 +225,10 @@ export default function Sidebar({
                 active={activeView === "admin-scoreboard"}
                 onClick={() => onNavigate("admin-scoreboard")}
               >
-                Puntuaciones
+                Puntuaciones (admin)
               </NavButton>
             </>
           ) : null}
-
-          <NavButton active={activeView === "resumen"} onClick={() => onNavigate("resumen")}>
-            Resumen
-          </NavButton>
         </nav>
 
         <div className="mt-auto text-xs text-slate-500">Navega por la app.</div>

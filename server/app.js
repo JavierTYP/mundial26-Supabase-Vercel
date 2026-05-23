@@ -732,14 +732,33 @@ app.put("/api/admin/mvp-result", async (req, res) => {
 
 app.get("/api/admin/users", async (req, res) => {
   if (!requireAdmin(req, res)) return;
-  const rows = await dbAll(db, "SELECT email, role, nick, created_at FROM users ORDER BY email ASC", []);
+  const rows = await dbAll(
+    db,
+    "SELECT email, role, nick, paid, created_at FROM users ORDER BY email ASC",
+    [],
+  );
   const users = rows.map((r) => ({
     email: r.email,
     role: r.role,
     nick: r.nick ?? null,
+    paid: Boolean(r.paid),
     createdAt: r.created_at,
   }));
   res.json({ users });
+});
+
+app.put("/api/admin/users/:email/paid", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const email = normalizeEmail(req.params.email);
+  if (!email) {
+    res.status(400).json({ error: "invalid_email" });
+    return;
+  }
+  const paid = Boolean(req.body?.paid);
+  const paidValue = db?.__dbKind === "pg" ? paid : paid ? 1 : 0;
+  await dbRun(db, "UPDATE users SET paid = ? WHERE email = ?", [paidValue, email]);
+  persistDb(db);
+  res.json({ ok: true, email, paid });
 });
 
 app.delete("/api/admin/users/:email", async (req, res) => {

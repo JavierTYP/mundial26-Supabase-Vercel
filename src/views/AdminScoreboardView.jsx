@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Card from "../components/Card.jsx";
 import { apiAdminScoreboard } from "../utils/api.js";
 
-export default function AdminScoreboardView({ grupos }) {
+export default function AdminScoreboardView({ grupos: _grupos } = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,18 +27,16 @@ export default function AdminScoreboardView({ grupos }) {
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-black tracking-tight">Puntuaciones</h2>
+        <h2 className="text-2xl font-black tracking-tight">Puntuaciones (admin)</h2>
         <p className="text-sm text-slate-300">
-          0 pts si no acierta ganador; 1 pt si acierta ganador/empate; 4 pts si acierta marcador exacto.
+          Vista de administración del ranking (mismos puntos, con endpoint admin).
         </p>
       </div>
 
       <Card className="p-4">
         <div className="text-xs font-bold uppercase tracking-wide text-slate-300">Partidos</div>
         <div className="mt-2 text-xs text-slate-400">
-          {loading
-            ? "Cargando..."
-            : `Partidos con resultado real: ${data?.playedMatches ?? 0}`}
+          {loading ? "Cargando..." : `Partidos con resultado real: ${data?.playedMatches ?? 0}`}
         </div>
       </Card>
 
@@ -51,9 +49,6 @@ export default function AdminScoreboardView({ grupos }) {
                 <th className="px-4 py-3">NICK</th>
                 <th className="px-4 py-3 text-center">ACIERTOS (con resultado)</th>
                 <th className="px-4 py-3 text-center">ACIERTOS (sin resultado)</th>
-                <th className="px-4 py-3 text-center">GOLEADORES</th>
-                <th className="px-4 py-3 text-center">MVP</th>
-                <th className="px-4 py-3 text-center">ZAMORA</th>
                 <th className="px-4 py-3 text-center">PUNTOS TOTALES</th>
               </tr>
             </thead>
@@ -68,15 +63,12 @@ export default function AdminScoreboardView({ grupos }) {
                   <td className="px-4 py-3 text-center font-black text-slate-100">
                     {r.outcomeHits} <span className="text-xs font-semibold text-slate-500">(x1)</span>
                   </td>
-                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
-                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
-                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
                   <td className="px-4 py-3 text-center font-black text-blue-200">{r.points}</td>
                 </tr>
               ))}
               {!loading && !(data?.rows?.length) ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-slate-300" colSpan={8}>
+                  <td className="px-4 py-6 text-sm text-slate-300" colSpan={5}>
                     No hay datos (aún no hay resultados reales o no hay usuarios).
                   </td>
                 </tr>

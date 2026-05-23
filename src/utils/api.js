@@ -102,6 +102,13 @@ export function apiAdminUsers() {
   return apiFetch("/api/admin/users", { method: "GET" });
 }
 
+export function apiAdminSetUserPaid(email, paid) {
+  return apiFetch(`/api/admin/users/${encodeURIComponent(email)}/paid`, {
+    method: "PUT",
+    body: JSON.stringify({ paid }),
+  });
+}
+
 export function apiAdminGetGoleadoresResult() {
   return apiFetch("/api/admin/goleadores-result", { method: "GET" });
 }

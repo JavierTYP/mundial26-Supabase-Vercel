@@ -23,6 +23,7 @@ import AdminZamoraResultView from "./views/AdminZamoraResultView.jsx";
 import ScoreboardView from "./views/ScoreboardView.jsx";
 import KnockoutPredictionsView from "./views/KnockoutPredictionsView.jsx";
 import ResumenView from "./views/ResumenView.jsx";
+import PremiosView from "./views/PremiosView.jsx";
 import GoleadoresView from "./views/GoleadoresView.jsx";
 import ZamoraView from "./views/ZamoraView.jsx";
 import MvpView from "./views/MvpView.jsx";
@@ -43,6 +44,7 @@ import {
   apiAdminDeleteUser,
   apiAdminPredictions,
   apiAdminSettings,
+  apiAdminSetUserPaid,
   apiAdminUsers,
   apiGetMyPredictions,
   apiGetTournamentState,
@@ -926,6 +928,20 @@ export default function App() {
               <AdminUsersView
                 users={users}
                 predictionsLocked={predictionsLocked}
+                onSetUserPaid={(email, paid) => {
+                  const prev = users;
+                  setUsers((curr) =>
+                    curr.map((u) => (u.email === email ? { ...u, paid: Boolean(paid) } : u)),
+                  );
+                  void apiAdminSetUserPaid(email, Boolean(paid))
+                    .then(() => {
+                      setNotification({ tone: "success", message: "Estado Paid actualizado." });
+                    })
+                    .catch(() => {
+                      setUsers(prev);
+                      setNotification({ tone: "error", message: "No se pudo actualizar Paid." });
+                    });
+                }}
                 onTogglePredictionsLocked={(locked) => {
                   void apiAdminSettings(Boolean(locked), undefined)
                     .then((r) => {
@@ -1285,6 +1301,8 @@ export default function App() {
           {activeView === "zamora" ? (
             <ZamoraView userEmail={user?.email} predictionsLocked={predictionsLocked} />
           ) : null}
+
+          {activeView === "premios" ? <PremiosView /> : null}
 
           {activeView === "dieciseisavos" ? (
             <KnockoutRoundView

@@ -44,6 +44,7 @@ export async function createDb() {
       email TEXT PRIMARY KEY,
       role TEXT NOT NULL,
       nick TEXT,
+      paid INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS sessions (
@@ -108,6 +109,13 @@ export async function createDb() {
     // ignore if already exists
   }
 
+  // Migration: existing DBs may not have the paid column.
+  try {
+    db.run("ALTER TABLE users ADD COLUMN paid INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    // ignore if already exists
+  }
+
   // Migration: existing DBs may not have the winner column.
   try {
     db.run("ALTER TABLE predictions ADD COLUMN winner TEXT");
@@ -153,6 +161,7 @@ async function createPgDb() {
       email TEXT UNIQUE NOT NULL,
       role TEXT NOT NULL,
       nick TEXT,
+      paid BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS sessions (
@@ -209,6 +218,9 @@ async function createPgDb() {
       updated_at TEXT NOT NULL
     );
   `);
+
+  // Migration: existing DBs may not have the paid column.
+  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS paid BOOLEAN NOT NULL DEFAULT FALSE");
 
   return {
     db: pool,
