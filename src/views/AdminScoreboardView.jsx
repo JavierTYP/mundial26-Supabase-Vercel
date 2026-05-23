@@ -47,24 +47,34 @@ export default function AdminScoreboardView({ grupos }) {
           <table className="w-full border-separate border-spacing-0 text-sm">
             <thead>
               <tr className="text-left text-xs font-black uppercase tracking-wide text-slate-300">
-                <th className="px-4 py-3">POS</th>
-                <th className="px-4 py-3 text-center">Acertados (con resultado)</th>
-                <th className="px-4 py-3 text-center">Acertados (sin resultado)</th>
-                <th className="px-4 py-3 text-center">Puntos totales</th>
+                <th className="px-4 py-3">POSICIÓN</th>
+                <th className="px-4 py-3 text-center">ACIERTOS (con resultado)</th>
+                <th className="px-4 py-3 text-center">ACIERTOS (sin resultado)</th>
+                <th className="px-4 py-3 text-center">GOLEADORES</th>
+                <th className="px-4 py-3 text-center">MVP</th>
+                <th className="px-4 py-3 text-center">ZAMORA</th>
+                <th className="px-4 py-3 text-center">PUNTOS TOTALES</th>
               </tr>
             </thead>
             <tbody>
               {(data?.rows ?? []).map((r, idx) => (
                 <tr key={r.email} className="border-t border-slate-800">
                   <td className="px-4 py-3 font-mono text-xs text-slate-300">{idx + 1}</td>
-                  <td className="px-4 py-3 text-center font-black text-slate-100">{r.exactHits}</td>
-                  <td className="px-4 py-3 text-center font-black text-slate-100">{r.outcomeHits}</td>
+                  <td className="px-4 py-3 text-center font-black text-slate-100">
+                    {r.exactHits} <span className="text-xs font-semibold text-slate-500">(x4)</span>
+                  </td>
+                  <td className="px-4 py-3 text-center font-black text-slate-100">
+                    {r.outcomeHits} <span className="text-xs font-semibold text-slate-500">(x1)</span>
+                  </td>
+                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
+                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
+                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
                   <td className="px-4 py-3 text-center font-black text-blue-200">{r.points}</td>
                 </tr>
               ))}
               {!loading && !(data?.rows?.length) ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-slate-300" colSpan={4}>
+                  <td className="px-4 py-6 text-sm text-slate-300" colSpan={7}>
                     No hay datos (aún no hay resultados reales o no hay usuarios).
                   </td>
                 </tr>
