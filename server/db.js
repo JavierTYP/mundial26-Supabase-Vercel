@@ -148,7 +148,9 @@ async function createPgDb() {
   // Create schema (idempotent) for compatibility with the existing sqlite tables.
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      email TEXT PRIMARY KEY,
+      user_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      auth_user_id UUID UNIQUE,
+      email TEXT UNIQUE NOT NULL,
       role TEXT NOT NULL,
       nick TEXT,
       created_at TEXT NOT NULL

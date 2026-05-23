@@ -28,6 +28,13 @@ export function apiLogin(email, password, nick = null) {
   });
 }
 
+export function apiLoginSupabase(accessToken, nick = null) {
+  return apiFetch("/api/login-supabase", {
+    method: "POST",
+    body: JSON.stringify({ accessToken, nick }),
+  });
+}
+
 export function apiLogout() {
   return apiFetch("/api/logout", { method: "POST" });
 }

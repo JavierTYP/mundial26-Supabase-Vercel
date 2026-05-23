@@ -16,6 +16,7 @@ import {
   verifyPassword,
   deleteSession,
 } from "./auth.js";
+import { getSupabaseAdmin } from "./supabaseAuth.js";
 
 const initialState = JSON.parse(
   fs.readFileSync(path.resolve(process.cwd(), "src", "data", "mundial2026.json"), "utf8"),
@@ -363,6 +364,76 @@ app.get("/api/me", async (req, res) => {
       predictionsLocked: await getPredictionsLocked(),
       resultsLocked: await getResultsLocked(),
     },
+  });
+});
+
+app.post("/api/login-supabase", async (req, res) => {
+  const accessToken = String(req.body?.accessToken ?? "").trim();
+  const nick = req.body?.nick ?? null;
+  const safeNick = String(nick ?? "").trim() || null;
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    res.status(500).json({ error: "supabase_not_configured" });
+    return;
+  }
+  if (!accessToken) {
+    res.status(400).json({ error: "missing_access_token" });
+    return;
+  }
+
+  const { data, error } = await supabase.auth.getUser(accessToken);
+  if (error || !data?.user?.email) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+
+  const email = normalizeEmail(data.user.email);
+  if (!email || !isAllowedEmail(email)) {
+    res.status(400).json({ error: "invalid_email" });
+    return;
+  }
+
+  // Ensure app user exists (stores role/nick) – password stays in Supabase Auth only.
+  let existing = await dbGet(db, "SELECT email, role, nick, created_at FROM users WHERE email = ?", [
+    email,
+  ]);
+
+  let upsertResult = null;
+  if (!existing) {
+    // If user doesn't exist, only allow creation when nick is provided (UI "register" mode).
+    if (!safeNick) {
+      res.status(404).json({ error: "user_not_registered" });
+      return;
+    }
+    upsertResult = await upsertUser(db, email, safeNick);
+    existing = await dbGet(db, "SELECT email, role, nick, created_at FROM users WHERE email = ?", [
+      email,
+    ]);
+  } else if (safeNick && safeNick !== (existing.nick ?? null)) {
+    await dbRun(db, "UPDATE users SET nick = ? WHERE email = ?", [safeNick, email]);
+    persistDb(db);
+    existing = { ...existing, nick: safeNick };
+  }
+
+  // Store auth_user_id if the column exists (best-effort).
+  try {
+    const authUserId = data.user.id ?? null;
+    if (authUserId) {
+      await dbRun(db, "UPDATE users SET auth_user_id = ? WHERE email = ?", [authUserId, email]);
+      persistDb(db);
+    }
+  } catch {
+    // ignore (column may not exist in sqlite)
+  }
+
+  const sid = await createSession(db, email);
+  res.setHeader("Set-Cookie", makeSessionCookie(sid));
+  res.json({
+    ok: true,
+    sid,
+    status: upsertResult?.status ?? "existing",
+    user: { email, role: existing?.role ?? "user", nick: existing?.nick ?? null },
   });
 });
 

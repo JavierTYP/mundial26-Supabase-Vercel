@@ -2,13 +2,9 @@ import { useMemo, useState } from "react";
 import Button from "../components/Button.jsx";
 import Card from "../components/Card.jsx";
 import bannerImg from "../assets/mundial2026-typsa_16x9.png";
-import {
-  DEFAULT_PASSWORD,
-  isAllowedEmail,
-  normalizeEmail,
-  saveSessionSid,
-} from "../utils/authStorage.js";
-import { apiLogin } from "../utils/api.js";
+import { isAllowedEmail, normalizeEmail, saveSessionSid } from "../utils/authStorage.js";
+import { apiLogin, apiLoginSupabase } from "../utils/api.js";
+import { supabase } from "../utils/supabaseClient.js";
 
 export default function LoginView({ onLoggedIn, notify }) {
   const [email, setEmail] = useState("");
@@ -37,46 +33,79 @@ export default function LoginView({ onLoggedIn, notify }) {
         notify({ tone: "error", message: "Introduce un nick." });
         return;
       }
-      if (password !== DEFAULT_PASSWORD) {
-        notify({ tone: "error", message: "Contraseña incorrecta." });
+      if (!password) {
+        notify({ tone: "error", message: "Introduce una contraseña." });
         return;
       }
 
       let res;
-      try {
-        res = await apiLogin(
-          normalizedEmail,
-          password,
-          mode === "register" ? nick.trim() : null,
-        );
-      } catch (err) {
-        const apiError = err?.data?.error ?? err?.message ?? "request_failed";
-        if (apiError === "user_not_registered") {
-          notify({ tone: "info", message: "Usuario no registrado" });
-          setMode("register");
+      if (supabase) {
+        try {
+          if (mode === "register") {
+            const { data, error } = await supabase.auth.signUp({
+              email: normalizedEmail,
+              password,
+            });
+            if (error) throw error;
+            const accessToken = data?.session?.access_token ?? null;
+            if (!accessToken) {
+              notify({ tone: "error", message: "No se pudo iniciar sesión." });
+              return;
+            }
+            res = await apiLoginSupabase(accessToken, nick.trim());
+          } else {
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email: normalizedEmail,
+              password,
+            });
+            if (error) throw error;
+            const accessToken = data?.session?.access_token ?? null;
+            if (!accessToken) {
+              notify({ tone: "error", message: "No se pudo iniciar sesión." });
+              return;
+            }
+            res = await apiLoginSupabase(accessToken, null);
+          }
+        } catch (err) {
+          const msg = String(err?.message ?? err);
+          if (msg.toLowerCase().includes("invalid login")) {
+            notify({ tone: "error", message: "Contraseña incorrecta." });
+            return;
+          }
+          notify({ tone: "error", message: "No se pudo iniciar sesión." });
           return;
         }
-        if (apiError === "invalid_password") {
-          notify({ tone: "error", message: "Contraseña incorrecta." });
+      } else {
+        // Local/simple auth fallback (no Supabase configured).
+        try {
+          res = await apiLogin(normalizedEmail, password, mode === "register" ? nick.trim() : null);
+        } catch (err) {
+          const apiError = err?.data?.error ?? err?.message ?? "request_failed";
+          if (apiError === "user_not_registered") {
+            notify({ tone: "info", message: "Usuario no registrado" });
+            setMode("register");
+            return;
+          }
+          if (apiError === "invalid_password") {
+            notify({ tone: "error", message: "Contraseña incorrecta." });
+            return;
+          }
+          if (apiError === "invalid_email") {
+            notify({ tone: "error", message: "Email inválido." });
+            return;
+          }
+          notify({ tone: "error", message: "No se pudo iniciar sesión." });
           return;
         }
-        if (apiError === "invalid_email") {
-          notify({ tone: "error", message: "Email inválido." });
-          return;
-        }
-        notify({ tone: "error", message: "No se pudo iniciar sesión." });
-        return;
       }
 
       if (mode === "register") {
-        if (res.status === "created") {
-          notify({ tone: "success", message: "Usuario registrado correctamente" });
-        } else {
-          notify({ tone: "info", message: "Usuario existente" });
-        }
+        if (res.status === "created") notify({ tone: "success", message: "Usuario registrado correctamente" });
+        else notify({ tone: "info", message: "Usuario existente" });
       } else if (res.status === "created") {
         notify({ tone: "success", message: "Usuario registrado correctamente" });
       }
+
       if (res?.sid) saveSessionSid(res.sid);
       onLoggedIn(res.user);
       shouldResetModeToLogin = true;
@@ -100,31 +129,15 @@ export default function LoginView({ onLoggedIn, notify }) {
           </div>
 
           <Card className="w-full p-6">
-            <h1 className="text-2xl font-black tracking-tight text-slate-100">
-              Acceso de usuarios
-            </h1>
-
-            {false ? (
-              <div className="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40">
-                <img
-                  src={bannerImg}
-                  alt="Mundial 2026 TYPSA"
-                  className="mx-auto h-auto max-h-48 w-full object-contain"
-                  loading="eager"
-                />
-              </div>
-            ) : null}
+            <h1 className="text-2xl font-black tracking-tight text-slate-100">Acceso de usuarios</h1>
 
             <p className="mt-3 text-sm text-slate-300">
-              Email @typsa.es y contraseña{" "}
-              <span className="font-mono">'mundial2026'</span>
+              Email @typsa.es y contraseña <span className="font-mono">'mundial2026'</span>
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <label className="block">
-                <div className="text-xs font-bold uppercase tracking-wide text-slate-300">
-                  USER
-                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-300">USER</div>
                 <input
                   className="mt-1 w-full rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none ring-1 ring-black/5 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                   type="email"
@@ -136,13 +149,11 @@ export default function LoginView({ onLoggedIn, notify }) {
               </label>
 
               <label className="block">
-                <div className="text-xs font-bold uppercase tracking-wide text-slate-300">
-                  PASSWORD
-                </div>
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-300">PASSWORD</div>
                 <input
                   className="mt-1 w-full rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none ring-1 ring-black/5 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                   placeholder="mundial2026"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -151,9 +162,7 @@ export default function LoginView({ onLoggedIn, notify }) {
 
               {mode === "register" ? (
                 <label className="block">
-                  <div className="text-xs font-bold uppercase tracking-wide text-slate-300">
-                    NICK
-                  </div>
+                  <div className="text-xs font-bold uppercase tracking-wide text-slate-300">NICK</div>
                   <input
                     className="mt-1 w-full rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none ring-1 ring-black/5 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                     type="text"
@@ -201,11 +210,10 @@ export default function LoginView({ onLoggedIn, notify }) {
             </form>
           </Card>
 
-          <p className="mt-6 text-center text-xs text-slate-500">
-            © 2026 Jobiyo · Todos los derechos reservados
-          </p>
+          <p className="mt-6 text-center text-xs text-slate-500">© 2026 Jobiyo · Todos los derechos reservados</p>
         </div>
       </div>
     </div>
   );
 }
+
