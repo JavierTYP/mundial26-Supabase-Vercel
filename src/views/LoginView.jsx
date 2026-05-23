@@ -90,12 +90,21 @@ export default function LoginView({ onLoggedIn, notify }) {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <div className="mx-auto grid min-h-screen max-w-7xl place-items-center px-4 py-10">
         <div className="w-full max-w-md">
+          <div className="mb-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40">
+            <img
+              src={bannerImg}
+              alt="Mundial 2026 TYPSA"
+              className="mx-auto h-auto max-h-[32vh] w-full object-contain"
+              loading="eager"
+            />
+          </div>
+
           <Card className="w-full p-6">
             <h1 className="text-2xl font-black tracking-tight text-slate-100">
               Acceso de usuarios
             </h1>
 
-            {mode === "register" ? (
+            {false ? (
               <div className="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40">
                 <img
                   src={bannerImg}
