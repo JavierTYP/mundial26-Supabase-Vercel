@@ -36,40 +36,56 @@ export default function Header({
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/70 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          {onToggleSidebar ? (
-            <button
-              type="button"
-              className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-900/60 ring-1 ring-slate-800 md:hidden"
-              aria-label="Abrir menú"
-              onClick={onToggleSidebar}
-            >
-              <span className="text-lg font-black text-slate-200">≡</span>
-            </button>
-          ) : null}
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-600/15 p-1 ring-1 ring-red-500/40">
-            <img
-              src={logoImg}
-              alt="Logo TYPSA"
-              className="h-full w-full object-contain"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
-          <div>
-            <div className="text-lg font-black tracking-tight">
-              MUNDIAL 2026 <span className="text-red-500">— TYPSA</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-              <Badge tone="red">
-                {torneo?.nombre ?? "FIFA World Cup 2026"}
-              </Badge>
-              {parts && (
-                <Badge tone="neutral">
-                  Comienza en {parts.days}d {parts.hours}h {parts.minutes}m
-                </Badge>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
+          {/* Mobile: menú arriba + título + línea separadora */}
+          <div className="md:hidden">
+            <div className="flex items-center gap-3">
+              {onToggleSidebar ? (
+                <button
+                  type="button"
+                  className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-900/60 ring-1 ring-slate-800"
+                  aria-label="Abrir menú"
+                  onClick={onToggleSidebar}
+                >
+                  <span className="text-lg font-black text-slate-200">≡</span>
+                </button>
+              ) : (
+                <div className="h-11 w-11" aria-hidden="true" />
               )}
-              {lastSavedLabel && <span className="text-slate-400">{lastSavedLabel}</span>}
+              <div className="flex-1 text-center text-lg font-black tracking-tight text-slate-100">
+                MUNDIAL 2026 <span className="text-red-500">— TYPSA</span>
+              </div>
+              <div className="h-11 w-11" aria-hidden="true" />
+            </div>
+            <div className="mt-3 h-px w-full bg-red-500/60" />
+          </div>
+
+          {/* Logo + metadatos (desktop incluye también el título) */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-600/15 p-1 ring-1 ring-red-500/40">
+              <img
+                src={logoImg}
+                alt="Logo TYPSA"
+                className="h-full w-full object-contain"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+            <div>
+              <div className="hidden text-lg font-black tracking-tight md:block">
+                MUNDIAL 2026 <span className="text-red-500">— TYPSA</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+                <Badge tone="red">{torneo?.nombre ?? "FIFA World Cup 2026"}</Badge>
+                {parts && (
+                  <Badge tone="neutral">
+                    Comienza en {parts.days}d {parts.hours}h {parts.minutes}m
+                  </Badge>
+                )}
+                {lastSavedLabel && (
+                  <span className="text-slate-400">{lastSavedLabel}</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
