@@ -46,15 +46,15 @@ export default function Header({
               <span className="text-lg font-black text-slate-200">≡</span>
             </button>
           ) : null}
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-500/10 ring-1 ring-blue-500/30">
-            <span className="text-lg font-black text-blue-200">M26</span>
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-red-500/10 ring-1 ring-red-500/30">
+            <span className="text-lg font-black text-red-200">m26</span>
           </div>
           <div>
             <div className="text-lg font-black tracking-tight">
-              MUNDIAL 2026 <span className="text-blue-300">— SIMULADOR</span>
+              MUNDIAL 2026 <span className="text-red-300">— TYPSA</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
-              <Badge tone="blue">
+              <Badge tone="red">
                 {torneo?.nombre ?? "FIFA World Cup 2026"}
               </Badge>
               {parts && (

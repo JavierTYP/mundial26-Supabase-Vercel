@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
+import SelectMenu from "../components/SelectMenu.jsx";
 import { parseCsv } from "../utils/csv.js";
 import { apiGetMyGoleadores, apiPutMyGoleadores } from "../utils/api.js";
 import { loadGoleadores, saveGoleadores } from "../utils/goleadoresStorage.js";
 import goleadoresCsv from "../../data/goleadores.csv?raw";
-
-const selectBase =
-  "w-full rounded-xl border border-slate-700/80 bg-slate-950/30 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-blue-500/30";
 
 function normalizePicks(picks) {
   const base = Array.isArray(picks) ? picks : [];
@@ -137,6 +135,14 @@ export default function GoleadoresView({ userEmail }) {
     { label: "3er goleador", idx: 2 },
   ];
 
+  const teamOptions = useMemo(() => {
+    const out = [];
+    Object.entries(teamsByGroup).forEach(([group, teams]) => {
+      teams.forEach((team) => out.push({ value: team, label: team, group }));
+    });
+    return out;
+  }, [teamsByGroup]);
+
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
@@ -171,53 +177,27 @@ export default function GoleadoresView({ userEmail }) {
               <div key={label} className="grid gap-3">
                 <div className="text-sm font-black tracking-tight text-slate-100">{label}</div>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <label className="grid gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Equipo
-                    </span>
-                    <select
-                      className={selectBase}
-                      value={current.team}
-                      onChange={(e) => {
-                        const team = e.target.value;
-                        const allowed = team ? playersByTeam[team] ?? [] : [];
-                        const nextPlayer = allowed.includes(current.player) ? current.player : "";
-                        updatePick(idx, { team, player: nextPlayer });
-                      }}
-                    >
-                      <option value="">Selecciona equipo</option>
-                      {Object.entries(teamsByGroup).map(([group, teams]) => (
-                        <optgroup key={group} label={group}>
-                          {teams.map((team) => (
-                            <option key={team} value={team}>
-                              {team}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </label>
+                  <SelectMenu
+                    label="Equipo"
+                    placeholder="Selecciona equipo"
+                    value={current.team}
+                    options={teamOptions}
+                    onChange={(team) => {
+                      const allowed = team ? playersByTeam[team] ?? [] : [];
+                      const nextPlayer = allowed.includes(current.player) ? current.player : "";
+                      updatePick(idx, { team, player: nextPlayer });
+                    }}
+                  />
 
-                  <label className="grid gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                      Jugador
-                    </span>
-                    <select
-                      className={selectBase}
-                      value={current.player}
-                      onChange={(e) => updatePick(idx, { player: e.target.value })}
-                      disabled={!current.team}
-                    >
-                      <option value="">
-                        {current.team ? "Selecciona jugador" : "Selecciona un equipo primero"}
-                      </option>
-                      {players.map((player) => (
-                        <option key={player} value={player}>
-                          {player}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <SelectMenu
+                    label="Jugador"
+                    placeholder={current.team ? "Selecciona jugador" : "Selecciona un equipo primero"}
+                    value={current.player}
+                    disabled={!current.team}
+                    searchable={players.length > 10}
+                    options={players.map((p) => ({ value: p, label: p }))}
+                    onChange={(player) => updatePick(idx, { player })}
+                  />
                 </div>
               </div>
             );

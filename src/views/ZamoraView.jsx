@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
+import SelectMenu from "../components/SelectMenu.jsx";
 import { parseCsv } from "../utils/csv.js";
 import { apiGetMyZamora, apiPutMyZamora } from "../utils/api.js";
 import { loadZamora, saveZamora } from "../utils/zamoraStorage.js";
 import porterosCsv from "../../data/porteros.csv?raw";
-
-const selectBase =
-  "w-full rounded-xl border border-slate-700/80 bg-slate-950/30 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-blue-500/30";
 
 function normalizePick(pick) {
   const row = pick && typeof pick === "object" ? pick : {};
@@ -121,6 +119,13 @@ export default function ZamoraView({ userEmail }) {
   }
 
   const keepers = pick.team ? goalkeepersByTeam[pick.team] ?? [] : [];
+  const teamOptions = useMemo(() => {
+    const out = [];
+    Object.entries(teamsByGroup).forEach(([group, teams]) => {
+      teams.forEach((team) => out.push({ value: team, label: team, group }));
+    });
+    return out;
+  }, [teamsByGroup]);
 
   return (
     <section className="space-y-4">
@@ -149,52 +154,29 @@ export default function ZamoraView({ userEmail }) {
 
       <Card className="p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <label className="grid gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Equipo</span>
-            <select
-              className={selectBase}
-              value={pick.team}
-              onChange={(e) => {
-                const team = e.target.value;
-                const allowed = team ? goalkeepersByTeam[team] ?? [] : [];
-                const nextKeeper = allowed.includes(pick.goalkeeper) ? pick.goalkeeper : "";
-                setPick((prev) => ({ ...prev, team, goalkeeper: nextKeeper }));
-              }}
-            >
-              <option value="">Selecciona equipo</option>
-              {Object.entries(teamsByGroup).map(([group, teams]) => (
-                <optgroup key={group} label={group}>
-                  {teams.map((team) => (
-                    <option key={team} value={team}>
-                      {team}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
+          <SelectMenu
+            label="Equipo"
+            placeholder="Selecciona equipo"
+            value={pick.team}
+            options={teamOptions}
+            onChange={(team) => {
+              const allowed = team ? goalkeepersByTeam[team] ?? [] : [];
+              const nextKeeper = allowed.includes(pick.goalkeeper) ? pick.goalkeeper : "";
+              setPick((prev) => ({ ...prev, team, goalkeeper: nextKeeper }));
+            }}
+          />
 
-          <label className="grid gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Portero</span>
-            <select
-              className={selectBase}
-              value={pick.goalkeeper}
-              onChange={(e) => setPick((prev) => ({ ...prev, goalkeeper: e.target.value }))}
-              disabled={!pick.team}
-            >
-              <option value="">
-                {pick.team ? "Selecciona portero" : "Selecciona un equipo primero"}
-              </option>
-              {keepers.map((gk) => (
-                <option key={gk} value={gk}>
-                  {gk}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SelectMenu
+            label="Portero"
+            placeholder={pick.team ? "Selecciona portero" : "Selecciona un equipo primero"}
+            value={pick.goalkeeper}
+            disabled={!pick.team}
+            searchable={keepers.length > 10}
+            options={keepers.map((gk) => ({ value: gk, label: gk }))}
+            onChange={(goalkeeper) => setPick((prev) => ({ ...prev, goalkeeper }))}
+          />
         </div>
       </Card>
     </section>
   );
 }
-

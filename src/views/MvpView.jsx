@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "../components/Card.jsx";
 import Button from "../components/Button.jsx";
+import SelectMenu from "../components/SelectMenu.jsx";
 import { parseCsv } from "../utils/csv.js";
 import { apiGetMyMvp, apiPutMyMvp } from "../utils/api.js";
 import { loadMvp, saveMvp } from "../utils/mvpStorage.js";
 import jugadoresCsv from "../../data/jugadores.csv?raw";
-
-const selectBase =
-  "w-full rounded-xl border border-slate-700/80 bg-slate-950/30 px-3 py-2 text-sm text-slate-100 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-blue-500/30";
 
 function normalizePick(pick) {
   const row = pick && typeof pick === "object" ? pick : {};
@@ -31,7 +29,7 @@ function decodeValue(value) {
 }
 
 export default function MvpView({ userEmail }) {
-  const { playersByGroup } = useMemo(() => {
+  const { allOptions } = useMemo(() => {
     const rows = parseCsv(jugadoresCsv);
     const byGroup = new Map();
 
@@ -45,18 +43,25 @@ export default function MvpView({ userEmail }) {
       byGroup.get(groupKey).push({ team: equipo, player: jugador });
     });
 
-    const playersByGroupObj = {};
+    const options = [];
     [...byGroup.entries()]
       .sort(([a], [b]) => a.localeCompare(b, "es"))
       .forEach(([group, list]) => {
-        playersByGroupObj[group] = list.sort((a, b) => {
+        const sorted = list.sort((a, b) => {
           const pa = `${a.player} (${a.team})`;
           const pb = `${b.player} (${b.team})`;
           return pa.localeCompare(pb, "es");
         });
+        sorted.forEach((p) => {
+          options.push({
+            value: encodeValue(p.team, p.player),
+            label: `${p.player} (${p.team})`,
+            group,
+          });
+        });
       });
 
-    return { playersByGroup: playersByGroupObj };
+    return { allOptions: options };
   }, []);
 
   const [pick, setPick] = useState(() => normalizePick(null));
@@ -156,28 +161,16 @@ export default function MvpView({ userEmail }) {
 
       <Card className="p-4">
         <div className="grid gap-3">
-          <label className="grid gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Jugador</span>
-            <select
-              className={selectBase}
-              value={pick.player ? encodeValue(pick.team, pick.player) : ""}
-              onChange={(e) => setPick(decodeValue(e.target.value))}
-            >
-              <option value="">Selecciona jugador</option>
-              {Object.entries(playersByGroup).map(([group, list]) => (
-                <optgroup key={group} label={group}>
-                  {list.map((p) => (
-                    <option key={`${p.team}::${p.player}`} value={encodeValue(p.team, p.player)}>
-                      {p.player} ({p.team})
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
+          <SelectMenu
+            label="Jugador"
+            placeholder="Selecciona jugador"
+            value={pick.player ? encodeValue(pick.team, pick.player) : ""}
+            options={allOptions}
+            searchable
+            onChange={(val) => setPick(decodeValue(val))}
+          />
         </div>
       </Card>
     </section>
   );
 }
-

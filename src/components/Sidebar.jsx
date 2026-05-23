@@ -54,6 +54,15 @@ export default function Sidebar({
     [],
   );
 
+  const extraPronosticosItems = useMemo(
+    () => [
+      { id: "goleadores", label: "Goleadores" },
+      { id: "mvp", label: "MVP" },
+      { id: "zamora", label: "Zamora" },
+    ],
+    [],
+  );
+
   const knockoutItems = useMemo(
     () => [
       { id: "fase-grupos", label: "Fase de grupos" },
@@ -103,23 +112,20 @@ export default function Sidebar({
                       {item.label}
                     </NavButton>
                   ))}
+
+                  <div className="my-2 border-t border-slate-800/80" />
+
+                  {extraPronosticosItems.map((item) => (
+                    <NavButton
+                      key={item.id}
+                      active={activeView === item.id}
+                      onClick={() => onNavigate(item.id)}
+                    >
+                      {item.label}
+                    </NavButton>
+                  ))}
                 </div>
               ) : null}
-
-              <NavButton
-                active={activeView === "goleadores"}
-                onClick={() => onNavigate("goleadores")}
-              >
-                Goleadores
-              </NavButton>
-
-              <NavButton active={activeView === "mvp"} onClick={() => onNavigate("mvp")}>
-                MVP
-              </NavButton>
-
-              <NavButton active={activeView === "zamora"} onClick={() => onNavigate("zamora")}>
-                Zamora
-              </NavButton>
             </>
           ) : null}
 
