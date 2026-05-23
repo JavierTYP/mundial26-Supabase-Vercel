@@ -48,6 +48,7 @@ export default function AdminScoreboardView({ grupos }) {
             <thead>
               <tr className="text-left text-xs font-black uppercase tracking-wide text-slate-300">
                 <th className="px-4 py-3">POSICIÓN</th>
+                <th className="px-4 py-3">NICK</th>
                 <th className="px-4 py-3 text-center">ACIERTOS (con resultado)</th>
                 <th className="px-4 py-3 text-center">ACIERTOS (sin resultado)</th>
                 <th className="px-4 py-3 text-center">GOLEADORES</th>
@@ -60,6 +61,7 @@ export default function AdminScoreboardView({ grupos }) {
               {(data?.rows ?? []).map((r, idx) => (
                 <tr key={r.email} className="border-t border-slate-800">
                   <td className="px-4 py-3 font-mono text-xs text-slate-300">{idx + 1}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-100">{r.nick ?? "-"}</td>
                   <td className="px-4 py-3 text-center font-black text-slate-100">
                     {r.exactHits} <span className="text-xs font-semibold text-slate-500">(x4)</span>
                   </td>
@@ -74,7 +76,7 @@ export default function AdminScoreboardView({ grupos }) {
               ))}
               {!loading && !(data?.rows?.length) ? (
                 <tr>
-                  <td className="px-4 py-6 text-sm text-slate-300" colSpan={7}>
+                  <td className="px-4 py-6 text-sm text-slate-300" colSpan={8}>
                     No hay datos (aún no hay resultados reales o no hay usuarios).
                   </td>
                 </tr>
