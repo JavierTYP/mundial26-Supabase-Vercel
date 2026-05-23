@@ -3,7 +3,7 @@ export default function Badge({ children, tone = "neutral" }) {
     neutral: "bg-slate-800/70 text-slate-200 border-slate-700",
     blue: "bg-blue-500/10 text-blue-200 border-blue-500/30",
     green: "bg-emerald-500/10 text-emerald-200 border-emerald-500/30",
-    red: "bg-red-500/10 text-red-200 border-red-500/30",
+    red: "bg-red-600/15 text-red-100 border-red-500/40",
   };
 
   return (
@@ -14,4 +14,3 @@ export default function Badge({ children, tone = "neutral" }) {
     </span>
   );
 }
-

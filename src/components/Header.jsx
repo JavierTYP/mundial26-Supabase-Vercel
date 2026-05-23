@@ -1,6 +1,7 @@
 import { differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import Badge from "./Badge.jsx";
 import Button from "./Button.jsx";
+import logoImg from "../assets/logo.png";
 
 function countdownParts(targetDate) {
   const now = new Date();
@@ -46,12 +47,18 @@ export default function Header({
               <span className="text-lg font-black text-slate-200">≡</span>
             </button>
           ) : null}
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-red-500/10 ring-1 ring-red-500/30">
-            <span className="text-lg font-black text-red-200">m26</span>
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-600/15 p-1 ring-1 ring-red-500/40">
+            <img
+              src={logoImg}
+              alt="Logo TYPSA"
+              className="h-full w-full object-contain"
+              loading="eager"
+              decoding="async"
+            />
           </div>
           <div>
             <div className="text-lg font-black tracking-tight">
-              MUNDIAL 2026 <span className="text-red-300">— TYPSA</span>
+              MUNDIAL 2026 <span className="text-red-500">— TYPSA</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
               <Badge tone="red">
