@@ -45,26 +45,35 @@ export default function PlayerView({ userEmail }) {
   const pointsRaw = me?.points;
   const pointsNum = typeof pointsRaw === "number" ? pointsRaw : Number(pointsRaw);
   const points = Number.isFinite(pointsNum) ? pointsNum : 0;
+  const exactHitsRaw = me?.exactHits;
+  const exactHitsNum = typeof exactHitsRaw === "number" ? exactHitsRaw : Number(exactHitsRaw);
+  const exactHits = Number.isFinite(exactHitsNum) ? exactHitsNum : 0;
+  const outcomeHitsRaw = me?.outcomeHits;
+  const outcomeHitsNum = typeof outcomeHitsRaw === "number" ? outcomeHitsRaw : Number(outcomeHitsRaw);
+  const outcomeHits = Number.isFinite(outcomeHitsNum) ? outcomeHitsNum : 0;
 
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-black tracking-tight">JUGADOR</h2>
-        <p className="text-sm text-slate-300">Datos del jugador</p>
+        <h2 className="text-2xl font-black tracking-tight">Jugador</h2>
+        <p className="text-sm text-slate-300">Información de jugador.</p>
       </div>
 
       <Card className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full border-separate border-spacing-0 text-sm">
-            <thead>
+            <thead className="hidden md:table-header-group">
               <tr className="text-left text-xs font-black uppercase tracking-wide text-slate-300">
                 <th className="px-4 py-3">CROMO</th>
-                <th className="px-4 py-3">DETALLES</th>
+                <th className="px-4 py-3">DATOS</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-t border-slate-800 align-top">
-                <td className="px-4 py-4">
+              <tr className="block border-t border-slate-800 align-top md:table-row">
+                <td className="block px-4 py-4 md:table-cell">
+                  <div className="mb-2 text-left text-xs font-black uppercase tracking-wide text-slate-300 md:hidden">
+                    CROMO
+                  </div>
                   <div className="w-[min(360px,70vw)]">
                     <div className="relative">
                       <img
@@ -75,16 +84,16 @@ export default function PlayerView({ userEmail }) {
                         decoding="async"
                       />
                       <div className="pointer-events-none absolute inset-0">
-                        <div className="absolute left-1/2 top-[73%] w-[78%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
-                          <div className="translate-x-[-6%] text-[clamp(14px,3.7vw,24px)] tracking-wide">
+                        <div className="absolute left-1/2 top-[75%] w-[78%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
+                          <div className="translate-x-[-8%] text-[clamp(14px,3.7vw,24px)] tracking-wide">
                             {nick.toUpperCase()}
                           </div>
-                          <div className="mt-1 translate-x-[-6%] text-[clamp(11px,2.9vw,16px)] font-semibold text-white/95">
+                          <div className="mt-1 translate-x-[-8%] text-[clamp(11px,2.9vw,16px)] font-semibold text-white/95">
                             {emailLabel}
                           </div>
                         </div>
-                        <div className="absolute left-1/2 top-[88%] w-[86%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
-                          <div className="translate-x-[-6%] text-[clamp(14px,3.8vw,24px)] tracking-wide">
+                        <div className="absolute left-1/2 top-[89%] w-[86%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
+                          <div className="translate-x-[-8%] text-[clamp(14px,3.8vw,24px)] tracking-wide">
                             {loading ? "…" : `${points} PUNTOS`}
                           </div>
                         </div>
@@ -95,7 +104,10 @@ export default function PlayerView({ userEmail }) {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-4">
+                <td className="block px-4 py-4 md:table-cell">
+                  <div className="mb-2 text-left text-xs font-black uppercase tracking-wide text-slate-300 md:hidden">
+                    DATOS
+                  </div>
                   <div className="grid gap-2 text-sm text-slate-200">
                     <div className="flex flex-wrap items-baseline gap-2">
                       <div className="text-xs font-bold uppercase tracking-wide text-slate-400">NICK:</div>
@@ -106,8 +118,23 @@ export default function PlayerView({ userEmail }) {
                       <div className="font-mono text-xs text-slate-200">{emailLabel}</div>
                     </div>
                     <div className="flex flex-wrap items-baseline gap-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        ACIERTOS (con resultado):
+                      </div>
+                      <div className="font-black text-slate-100">{loading ? "…" : exactHits}</div>
+                      <div className="text-xs font-semibold text-slate-500">Número de aciertos con resultado</div>
+                    </div>
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        ACIERTOS (sin resultado):
+                      </div>
+                      <div className="font-black text-slate-100">{loading ? "…" : outcomeHits}</div>
+                      <div className="text-xs font-semibold text-slate-500">Número de aciertos sin resultado</div>
+                    </div>
+                    <div className="flex flex-wrap items-baseline gap-2">
                       <div className="text-xs font-bold uppercase tracking-wide text-slate-400">PUNTOS:</div>
                       <div className="font-black text-blue-200">{loading ? "…" : points}</div>
+                      <div className="text-xs font-semibold text-slate-500">Numero total de puntos</div>
                     </div>
                   </div>
                 </td>
