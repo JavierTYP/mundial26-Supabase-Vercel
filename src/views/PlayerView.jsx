@@ -76,15 +76,15 @@ export default function PlayerView({ userEmail }) {
                       />
                       <div className="pointer-events-none absolute inset-0">
                         <div className="absolute left-1/2 top-[73%] w-[78%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
-                          <div className="translate-x-[-4%] text-[clamp(16px,4.1vw,28px)] tracking-wide">
+                          <div className="translate-x-[-6%] text-[clamp(14px,3.7vw,24px)] tracking-wide">
                             {nick.toUpperCase()}
                           </div>
-                          <div className="mt-1 translate-x-[-4%] text-[clamp(11px,2.9vw,16px)] font-semibold text-white/95">
+                          <div className="mt-1 translate-x-[-6%] text-[clamp(11px,2.9vw,16px)] font-semibold text-white/95">
                             {emailLabel}
                           </div>
                         </div>
                         <div className="absolute left-1/2 top-[88%] w-[86%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
-                          <div className="translate-x-[-4%] text-[clamp(16px,4.2vw,28px)] tracking-wide">
+                          <div className="translate-x-[-6%] text-[clamp(14px,3.8vw,24px)] tracking-wide">
                             {loading ? "…" : `${points} PUNTOS`}
                           </div>
                         </div>
@@ -97,19 +97,17 @@ export default function PlayerView({ userEmail }) {
                 </td>
                 <td className="px-4 py-4">
                   <div className="grid gap-2 text-sm text-slate-200">
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">NICK</div>
-                      <div className="mt-1 font-black text-slate-100">{nick}</div>
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">NICK:</div>
+                      <div className="font-black text-slate-100">{nick}</div>
                     </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">EMAIL</div>
-                      <div className="mt-1 font-mono text-xs text-slate-200">{emailLabel}</div>
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">EMAIL:</div>
+                      <div className="font-mono text-xs text-slate-200">{emailLabel}</div>
                     </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">PUNTOS</div>
-                      <div className="mt-1 font-black text-blue-200">
-                        {loading ? "…" : points}
-                      </div>
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">PUNTOS:</div>
+                      <div className="font-black text-blue-200">{loading ? "…" : points}</div>
                     </div>
                   </div>
                 </td>

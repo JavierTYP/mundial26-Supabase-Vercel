@@ -96,10 +96,6 @@ export default function Sidebar({
             Inicio
           </NavButton>
 
-          <NavButton active={activeView === "player"} onClick={() => onNavigate("player")}>
-            Jugador
-          </NavButton>
-
           {!isAdmin ? (
             <>
               <button
