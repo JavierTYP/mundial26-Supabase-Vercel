@@ -27,6 +27,7 @@ import PremiosView from "./views/PremiosView.jsx";
 import GoleadoresView from "./views/GoleadoresView.jsx";
 import ZamoraView from "./views/ZamoraView.jsx";
 import MvpView from "./views/MvpView.jsx";
+import PlayerView from "./views/PlayerView.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 import { advanceRound, buildDieciseisavos, winnerId } from "./utils/knockout.js";
@@ -880,6 +881,7 @@ export default function App() {
         onReset={isAdmin ? handleReset : null}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         userEmail={user?.email}
+        onOpenPlayer={() => navigate("player")}
         onExportPredictions={!isAdmin && !predictionsLocked ? handleExportPredictions : null}
         onLogout={() => {
           void apiLogout().catch(() => {});
@@ -1291,6 +1293,8 @@ export default function App() {
           {activeView === "puntuaciones" ? (
             <ScoreboardView grupos={state.grupos} />
           ) : null}
+
+          {activeView === "player" ? <PlayerView userEmail={user?.email} /> : null}
 
           {activeView === "goleadores" ? (
             <GoleadoresView userEmail={user?.email} predictionsLocked={predictionsLocked} />

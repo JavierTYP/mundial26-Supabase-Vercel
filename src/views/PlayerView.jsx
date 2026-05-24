@@ -1,0 +1,132 @@
+import { useEffect, useMemo, useState } from "react";
+import Card from "../components/Card.jsx";
+import cromoImg from "../assets/cromo.png";
+import { apiScoreboard } from "../utils/api.js";
+
+function fallbackNick(email) {
+  const s = String(email ?? "").trim();
+  if (!s) return "-";
+  const at = s.indexOf("@");
+  const nick = (at >= 0 ? s.slice(0, at) : s).trim();
+  return nick || s;
+}
+
+export default function PlayerView({ userEmail }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    void apiScoreboard(null)
+      .then((r) => {
+        if (!cancelled) setData(r);
+      })
+      .catch(() => {
+        if (!cancelled) setData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const me = useMemo(() => {
+    const email = String(userEmail ?? "").trim().toLowerCase();
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+    if (!email) return null;
+    return rows.find((r) => String(r?.email ?? "").trim().toLowerCase() === email) ?? null;
+  }, [data?.rows, userEmail]);
+
+  const nick = me?.nick?.trim() ? me.nick.trim() : fallbackNick(userEmail);
+  const emailLabel = String(userEmail ?? "").trim() || "-";
+  const pointsRaw = me?.points;
+  const pointsNum = typeof pointsRaw === "number" ? pointsRaw : Number(pointsRaw);
+  const points = Number.isFinite(pointsNum) ? pointsNum : 0;
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-2xl font-black tracking-tight">JUGADOR</h2>
+        <p className="text-sm text-slate-300">Datos del jugador</p>
+      </div>
+
+      <Card className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full border-separate border-spacing-0 text-sm">
+            <thead>
+              <tr className="text-left text-xs font-black uppercase tracking-wide text-slate-300">
+                <th className="px-4 py-3">CROMO</th>
+                <th className="px-4 py-3">DETALLES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-slate-800 align-top">
+                <td className="px-4 py-4">
+                  <div className="w-[min(360px,70vw)]">
+                    <div className="relative">
+                      <img
+                        src={cromoImg}
+                        alt="Cromo del jugador"
+                        className="h-auto w-full select-none"
+                        loading="eager"
+                        decoding="async"
+                      />
+                      <div className="pointer-events-none absolute inset-0">
+                        <div className="absolute left-1/2 top-[73%] w-[78%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
+                          <div className="text-[clamp(18px,4.6vw,32px)] tracking-wide">
+                            {nick.toUpperCase()}
+                          </div>
+                          <div className="mt-1 text-[clamp(12px,3.2vw,18px)] font-semibold text-white/95">
+                            {emailLabel}
+                          </div>
+                        </div>
+                        <div className="absolute left-1/2 top-[88%] w-[86%] -translate-x-1/2 text-center font-black leading-none text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
+                          <div className="text-[clamp(20px,5vw,36px)] tracking-widest">
+                            {loading ? "…" : points}
+                          </div>
+                          <div className="mt-1 text-[clamp(12px,3.2vw,18px)] font-black tracking-[0.35em] text-white/95">
+                            PUNTOS
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-400">
+                      {loading ? "Cargando puntuación..." : "Puntuación basada en resultados reales."}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4">
+                  <div className="grid gap-2 text-sm text-slate-200">
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        Nick
+                      </div>
+                      <div className="mt-1 font-black text-slate-100">{nick}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        Email
+                      </div>
+                      <div className="mt-1 font-mono text-xs text-slate-200">{emailLabel}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                        Puntos
+                      </div>
+                      <div className="mt-1 font-black text-blue-200">
+                        {loading ? "…" : points}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </section>
+  );
+}

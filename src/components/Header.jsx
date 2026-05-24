@@ -2,6 +2,7 @@ import { differenceInDays, differenceInHours, differenceInMinutes } from "date-f
 import Badge from "./Badge.jsx";
 import Button from "./Button.jsx";
 import logoImg from "../assets/logo.png";
+import userImg from "../assets/user.png";
 
 function countdownParts(targetDate) {
   const now = new Date();
@@ -30,8 +31,33 @@ export default function Header({
   userEmail,
   onLogout,
   onExportPredictions,
+  onOpenPlayer,
 }) {
   const parts = countdownParts(torneo?.fechaInicio);
+  const avatarInner = (
+    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-900/60 ring-1 ring-slate-800">
+      <img
+        src={userImg}
+        alt="Usuario"
+        className="h-8 w-8 rounded-full object-cover"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+  );
+
+  const avatar = onOpenPlayer ? (
+    <button
+      type="button"
+      className="rounded-2xl outline-none ring-offset-2 ring-offset-slate-950 focus-visible:ring-2 focus-visible:ring-red-500/70"
+      aria-label="Ver jugador"
+      onClick={onOpenPlayer}
+    >
+      {avatarInner}
+    </button>
+  ) : (
+    avatarInner
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/70 backdrop-blur">
@@ -55,7 +81,7 @@ export default function Header({
               <div className="flex-1 text-center text-lg font-black tracking-tight text-slate-100">
                 MUNDIAL 2026 <span className="text-red-500">— TYPSA</span>
               </div>
-              <div className="h-11 w-11" aria-hidden="true" />
+              {avatar}
             </div>
             <div className="mt-3 h-px w-full bg-red-500/60" />
           </div>
@@ -132,6 +158,7 @@ export default function Header({
               Reiniciar
             </Button>
           ) : null}
+          <div className="hidden md:block">{avatar}</div>
         </div>
       </div>
     </header>
