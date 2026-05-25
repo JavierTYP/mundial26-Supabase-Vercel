@@ -201,7 +201,7 @@ export default function Sidebar({
           </NavButton>
 
           <NavButton active={activeView === "premios"} onClick={() => onNavigate("premios")}>
-            Premios
+            Ganadores
           </NavButton>
 
           {isAdmin ? (

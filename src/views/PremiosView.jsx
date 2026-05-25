@@ -40,8 +40,8 @@ export default function PremiosView() {
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-black tracking-tight">Premios</h2>
-        <p className="text-sm text-slate-300">Premios para los ganadores.</p>
+        <h2 className="text-2xl font-black tracking-tight">Ganadores</h2>
+        <p className="text-sm text-slate-300">Clasificación final y ganadores.</p>
       </div>
 
       <Card className="p-4">
@@ -67,22 +67,37 @@ export default function PremiosView() {
             </div>
             <div className="mt-2 grid gap-1 text-sm text-slate-200">
               <div>
-                <span className="font-black text-slate-100">1er. ganador</span>{" "}
+                <span className="inline-flex items-center gap-1 font-black text-slate-100">
+                  1er. ganador{" "}
+                  <span role="img" aria-label="Medalla de oro">
+                    🥇
+                  </span>
+                </span>{" "}
                 =&gt; {displayParticipant(winners[0])}{" "}
                 <span className="text-slate-400">
                   {winners[0] ? `(${winners[0].points} pts)` : ""}
                 </span>
               </div>
               <div>
-                <span className="font-black text-slate-100">2º ganador</span> =&gt;{" "}
-                {displayParticipant(winners[1])}{" "}
+                <span className="inline-flex items-center gap-1 font-black text-slate-100">
+                  2do. ganador{" "}
+                  <span role="img" aria-label="Medalla de plata">
+                    🥈
+                  </span>
+                </span>{" "}
+                =&gt; {displayParticipant(winners[1])}{" "}
                 <span className="text-slate-400">
                   {winners[1] ? `(${winners[1].points} pts)` : ""}
                 </span>
               </div>
               <div>
-                <span className="font-black text-slate-100">3er ganador</span> =&gt;{" "}
-                {displayParticipant(winners[2])}{" "}
+                <span className="inline-flex items-center gap-1 font-black text-slate-100">
+                  3er. ganador{" "}
+                  <span role="img" aria-label="Medalla de bronce">
+                    🥉
+                  </span>
+                </span>{" "}
+                =&gt; {displayParticipant(winners[2])}{" "}
                 <span className="text-slate-400">
                   {winners[2] ? `(${winners[2].points} pts)` : ""}
                 </span>
@@ -128,4 +143,3 @@ export default function PremiosView() {
     </section>
   );
 }
-
