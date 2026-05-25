@@ -1,6 +1,6 @@
 # Mundial 2026 — Simulador
 
-![MUNDIAL26 - TYPSA](./public/mundial2026-typsa_1200x600px.png)
+![MUNDIAL26 - TYPSA](./public/mundial2026-typsa_1200x630px.jpg)
 
 App web para simular el Mundial 2026: fase de grupos, clasificados y eliminatorias.
 

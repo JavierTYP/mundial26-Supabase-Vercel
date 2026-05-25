@@ -6,7 +6,7 @@ const distDir = path.join(projectRoot, "dist");
 const publicDir = path.join(projectRoot, "public");
 
 const filesToCopy = [
-  "mundial2026-typsa_1200x600px.png",
+  "mundial2026-typsa_1200x630px.jpg",
 ];
 
 fs.mkdirSync(distDir, { recursive: true });
