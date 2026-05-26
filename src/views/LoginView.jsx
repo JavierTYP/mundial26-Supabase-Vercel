@@ -145,12 +145,7 @@ export default function LoginView({ onLoggedIn, notify }) {
             <h1 className="text-2xl font-black tracking-tight text-slate-100">Acceso de usuarios</h1>
 
             <p className="mt-3 text-sm text-slate-300">
-              Email @typsa.es y contraseña <span className="font-mono">'{DEFAULT_PASSWORD}'</span>{" "}
-              {mode === "register" ? null : (
-                <>
-                  (admin: <span className="font-mono">'{ADMIN_PASSWORD}'</span>)
-                </>
-              )}
+              Email @typsa.es y contraseña <span className="font-mono">'{DEFAULT_PASSWORD}'</span>
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -172,7 +167,7 @@ export default function LoginView({ onLoggedIn, notify }) {
                   className="mt-1 w-full rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none ring-1 ring-black/5 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                   type="password"
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  placeholder={mode === "register" && isAdminEmail ? "Introduce tu contraseña" : isAdminEmail ? ADMIN_PASSWORD : DEFAULT_PASSWORD}
+                  placeholder={DEFAULT_PASSWORD}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
