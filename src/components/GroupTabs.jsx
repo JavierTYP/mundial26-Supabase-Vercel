@@ -1,6 +1,6 @@
 export default function GroupTabs({ groupIds, active, onChange }) {
   return (
-    <div className="no-scrollbar flex gap-2 overflow-x-auto border-b border-slate-800 pb-2">
+    <div className="flex gap-2 overflow-x-auto border-b border-slate-800 pb-3">
       {groupIds.map((gid) => {
         const isActive = gid === active;
         return (

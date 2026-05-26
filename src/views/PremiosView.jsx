@@ -41,7 +41,15 @@ export default function PremiosView() {
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-black tracking-tight">Ganadores</h2>
-        <p className="text-sm text-slate-300">Clasificación final y ganadores.</p>
+        <p className="text-sm text-slate-300">
+          Clasificación final y ganadores.
+          <br />
+          70% para el ganador
+          <br />
+          20% para el segundo
+          <br />
+          10% para el tercero
+        </p>
       </div>
 
       <Card className="p-4">

@@ -9,10 +9,12 @@ import goleadoresCsv from "../../data/goleadores.csv?raw";
 
 function normalizePicks(picks) {
   const base = Array.isArray(picks) ? picks : [];
-  return [0, 1, 2].map((idx) => ({
-    team: String(base[idx]?.team ?? ""),
-    player: String(base[idx]?.player ?? ""),
-  }));
+  return [
+    {
+      team: String(base[0]?.team ?? ""),
+      player: String(base[0]?.player ?? ""),
+    },
+  ];
 }
 
 export default function GoleadoresView({ userEmail, predictionsLocked = false }) {
@@ -130,12 +132,6 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
     });
   };
 
-  const pickRows = [
-    { label: "1er goleador", idx: 0 },
-    { label: "2do goleador", idx: 1 },
-    { label: "3er goleador", idx: 2 },
-  ];
-
   const teamOptions = useMemo(() => {
     const out = [];
     Object.entries(teamsByGroup).forEach(([group, teams]) => {
@@ -149,8 +145,10 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-2xl font-black tracking-tight">Goleadores</h2>
-            <p className="text-sm text-slate-300">Elige tus 3 goleadores (equipo + jugador).</p>
+            <h2 className="text-2xl font-black tracking-tight">Bota de oro</h2>
+            <p className="text-sm text-slate-300">
+              Elige el máximo goleador (equipo + jugador).
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {saveStatus === "saved" ? (
@@ -174,41 +172,36 @@ export default function GoleadoresView({ userEmail, predictionsLocked = false })
       </div>
 
       <Card className="p-4">
-        <div className="grid gap-6">
-          {pickRows.map(({ label, idx }) => {
-            const current = picks[idx] ?? { team: "", player: "" };
-            const players = current.team ? playersByTeam[current.team] ?? [] : [];
-            return (
-              <div key={label} className="grid gap-3">
-                <div className="text-sm font-black tracking-tight text-slate-100">{label}</div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <SelectMenu
-                    label="Equipo"
-                    placeholder="Selecciona equipo"
-                    value={current.team}
-                    disabled={predictionsLocked || !userEmail}
-                    options={teamOptions}
-                    onChange={(team) => {
-                      const allowed = team ? playersByTeam[team] ?? [] : [];
-                      const nextPlayer = allowed.includes(current.player) ? current.player : "";
-                      updatePick(idx, { team, player: nextPlayer });
-                    }}
-                  />
+        {(() => {
+          const current = picks[0] ?? { team: "", player: "" };
+          const players = current.team ? playersByTeam[current.team] ?? [] : [];
+          return (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <SelectMenu
+                label="Equipo"
+                placeholder="Selecciona equipo"
+                value={current.team}
+                disabled={predictionsLocked || !userEmail}
+                options={teamOptions}
+                onChange={(team) => {
+                  const allowed = team ? playersByTeam[team] ?? [] : [];
+                  const nextPlayer = allowed.includes(current.player) ? current.player : "";
+                  updatePick(0, { team, player: nextPlayer });
+                }}
+              />
 
-                  <SelectMenu
-                    label="Jugador"
-                    placeholder={current.team ? "Selecciona jugador" : "Selecciona un equipo primero"}
-                    value={current.player}
-                    disabled={predictionsLocked || !userEmail || !current.team}
-                    searchable={players.length > 10}
-                    options={players.map((p) => ({ value: p, label: p }))}
-                    onChange={(player) => updatePick(idx, { player })}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              <SelectMenu
+                label="Jugador"
+                placeholder={current.team ? "Selecciona jugador" : "Selecciona un equipo primero"}
+                value={current.player}
+                disabled={predictionsLocked || !userEmail || !current.team}
+                searchable={players.length > 10}
+                options={players.map((p) => ({ value: p, label: p }))}
+                onChange={(player) => updatePick(0, { player })}
+              />
+            </div>
+          );
+        })()}
       </Card>
     </section>
   );

@@ -140,7 +140,7 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-2xl font-black tracking-tight">MVP</h2>
+            <h2 className="text-2xl font-black tracking-tight">Balón de oro</h2>
             <p className="text-sm text-slate-300">Mejor jugador del torneo.</p>
           </div>
           <div className="flex items-center gap-3">

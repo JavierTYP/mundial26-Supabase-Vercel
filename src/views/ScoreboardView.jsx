@@ -30,6 +30,12 @@ export default function ScoreboardView({ grupos }) {
         <h2 className="text-2xl font-black tracking-tight">Puntuaciones</h2>
         <p className="text-sm text-slate-300">
           0 pts si no acierta ganador; 1 pt si acierta ganador/empate; 4 pts si acierta marcador exacto.
+          <br />
+          10 puntos por acertar el &quot;Balón de oro&quot;.
+          <br />
+          10 puntos por acertar la &quot;Bota de oro&quot;.
+          <br />
+          10 puntos por acertar el &quot;Guante de oro&quot;.
         </p>
       </div>
 
@@ -49,9 +55,9 @@ export default function ScoreboardView({ grupos }) {
                 <th className="px-4 py-3">NICK</th>
                 <th className="px-4 py-3 text-center">ACIERTOS (con resultado)</th>
                 <th className="px-4 py-3 text-center">ACIERTOS (sin resultado)</th>
-                <th className="px-4 py-3 text-center">GOLEADORES</th>
-                <th className="px-4 py-3 text-center">MVP</th>
-                <th className="px-4 py-3 text-center">ZAMORA</th>
+                <th className="px-4 py-3 text-center">Bota de oro</th>
+                <th className="px-4 py-3 text-center">Balón de oro</th>
+                <th className="px-4 py-3 text-center">Guante de oro</th>
                 <th className="px-4 py-3 text-center">PUNTOS TOTALES</th>
               </tr>
             </thead>
@@ -66,9 +72,27 @@ export default function ScoreboardView({ grupos }) {
                   <td className="px-4 py-3 text-center font-black text-slate-100">
                     {r.outcomeHits} <span className="text-xs font-semibold text-slate-500">(x1)</span>
                   </td>
-                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
-                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
-                  <td className="px-4 py-3 text-center font-black text-slate-500">-</td>
+                  <td className="px-4 py-3 text-center font-black">
+                    {r.botaDeOroPoints ? (
+                      <span className="text-emerald-200">+{r.botaDeOroPoints}</span>
+                    ) : (
+                      <span className="text-slate-500">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center font-black">
+                    {r.balonDeOroPoints ? (
+                      <span className="text-emerald-200">+{r.balonDeOroPoints}</span>
+                    ) : (
+                      <span className="text-slate-500">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center font-black">
+                    {r.guanteDeOroPoints ? (
+                      <span className="text-emerald-200">+{r.guanteDeOroPoints}</span>
+                    ) : (
+                      <span className="text-slate-500">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-center font-black text-blue-200">{r.points}</td>
                 </tr>
               ))}

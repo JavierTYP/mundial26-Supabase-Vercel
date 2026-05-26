@@ -894,6 +894,12 @@ function extractGroupMatchesWithResults(state, groupId = null) {
   return out;
 }
 
+function normalizeKey(s) {
+  return String(s ?? "")
+    .trim()
+    .toLocaleLowerCase("es");
+}
+
 async function computeScoreboard(groupId = null) {
   const { state } = await getTournamentState();
   const matches = extractGroupMatchesWithResults(state, groupId);
@@ -905,6 +911,9 @@ async function computeScoreboard(groupId = null) {
     [ADMIN_EMAIL],
   );
   const users = userRows.map((u) => ({ email: u.email, role: u.role, nick: u.nick ?? null }));
+
+  const userEmails = users.map((u) => u.email);
+  const userEmailSet = new Set(userEmails);
 
   const predRows = matchIds.size
     ? await dbAll(
@@ -923,6 +932,89 @@ async function computeScoreboard(groupId = null) {
     const email = r.email;
     if (!predsByUser.has(email)) predsByUser.set(email, new Map());
     predsByUser.get(email).set(r.match_id, { local: r.local, visitante: r.visitante });
+  }
+
+  const [goleadoresResultRow, mvpResultRow, zamoraResultRow] = await Promise.all([
+    dbGet(db, "SELECT picks_json FROM goleadores_result WHERE id = 1", []),
+    dbGet(db, "SELECT pick_json FROM mvp_result WHERE id = 1", []),
+    dbGet(db, "SELECT pick_json FROM zamora_result WHERE id = 1", []),
+  ]);
+
+  const goleadoresResultRaw = goleadoresResultRow?.picks_json ?? null;
+  const goleadoresResultParsed =
+    goleadoresResultRaw && typeof goleadoresResultRaw === "string"
+      ? jsonOrNull(goleadoresResultRaw)
+      : goleadoresResultRaw && typeof goleadoresResultRaw === "object"
+        ? goleadoresResultRaw
+        : null;
+  const goleadoresResult = normalizeGoleadoresPicks(goleadoresResultParsed);
+
+  const mvpResultRaw = mvpResultRow?.pick_json ?? null;
+  const mvpResultParsed =
+    mvpResultRaw && typeof mvpResultRaw === "string"
+      ? jsonOrNull(mvpResultRaw)
+      : mvpResultRaw && typeof mvpResultRaw === "object"
+        ? mvpResultRaw
+        : null;
+  const mvpResult = normalizeMvpPick(mvpResultParsed);
+
+  const zamoraResultRaw = zamoraResultRow?.pick_json ?? null;
+  const zamoraResultParsed =
+    zamoraResultRaw && typeof zamoraResultRaw === "string"
+      ? jsonOrNull(zamoraResultRaw)
+      : zamoraResultRaw && typeof zamoraResultRaw === "object"
+        ? zamoraResultRaw
+        : null;
+  const zamoraResult = normalizeZamoraPick(zamoraResultParsed);
+
+  const awardQueries = userEmailSet.size
+    ? await Promise.all([
+        dbAll(
+          db,
+          `SELECT email, picks_json FROM goleadores_picks WHERE email IN (${userEmails
+            .map(() => "?")
+            .join(",")})`,
+          userEmails,
+        ),
+        dbAll(
+          db,
+          `SELECT email, pick_json FROM mvp_picks WHERE email IN (${userEmails.map(() => "?").join(",")})`,
+          userEmails,
+        ),
+        dbAll(
+          db,
+          `SELECT email, pick_json FROM zamora_picks WHERE email IN (${userEmails
+            .map(() => "?")
+            .join(",")})`,
+          userEmails,
+        ),
+      ])
+    : [[], [], []];
+
+  const [goleadoresPickRows, mvpPickRows, zamoraPickRows] = awardQueries;
+
+  const goleadoresPickByEmail = new Map();
+  for (const r of goleadoresPickRows ?? []) {
+    const raw = r?.picks_json ?? null;
+    const parsed =
+      raw && typeof raw === "string" ? jsonOrNull(raw) : raw && typeof raw === "object" ? raw : null;
+    goleadoresPickByEmail.set(r.email, normalizeGoleadoresPicks(parsed));
+  }
+
+  const mvpPickByEmail = new Map();
+  for (const r of mvpPickRows ?? []) {
+    const raw = r?.pick_json ?? null;
+    const parsed =
+      raw && typeof raw === "string" ? jsonOrNull(raw) : raw && typeof raw === "object" ? raw : null;
+    mvpPickByEmail.set(r.email, normalizeMvpPick(parsed));
+  }
+
+  const zamoraPickByEmail = new Map();
+  for (const r of zamoraPickRows ?? []) {
+    const raw = r?.pick_json ?? null;
+    const parsed =
+      raw && typeof raw === "string" ? jsonOrNull(raw) : raw && typeof raw === "object" ? raw : null;
+    zamoraPickByEmail.set(r.email, normalizeZamoraPick(parsed));
   }
 
   const rows = users.map((u) => {
@@ -944,12 +1036,54 @@ async function computeScoreboard(groupId = null) {
         points += 1;
       }
     }
+
+    let botaDeOroPoints = 0;
+    let balonDeOroPoints = 0;
+    let guanteDeOroPoints = 0;
+
+    const goleadorWinner = goleadoresResult?.[0] ?? { team: "", player: "" };
+    const userGoleadores = goleadoresPickByEmail.get(u.email) ?? [];
+    const userGoleador = userGoleadores?.[0] ?? { team: "", player: "" };
+    if (
+      normalizeKey(goleadorWinner.team) &&
+      normalizeKey(goleadorWinner.player) &&
+      normalizeKey(userGoleador.team) === normalizeKey(goleadorWinner.team) &&
+      normalizeKey(userGoleador.player) === normalizeKey(goleadorWinner.player)
+    ) {
+      botaDeOroPoints = 10;
+      points += 10;
+    }
+
+    if (
+      normalizeKey(mvpResult.team) &&
+      normalizeKey(mvpResult.player) &&
+      normalizeKey(mvpPickByEmail.get(u.email)?.team) === normalizeKey(mvpResult.team) &&
+      normalizeKey(mvpPickByEmail.get(u.email)?.player) === normalizeKey(mvpResult.player)
+    ) {
+      balonDeOroPoints = 10;
+      points += 10;
+    }
+
+    if (
+      normalizeKey(zamoraResult.team) &&
+      normalizeKey(zamoraResult.goalkeeper) &&
+      normalizeKey(zamoraPickByEmail.get(u.email)?.team) === normalizeKey(zamoraResult.team) &&
+      normalizeKey(zamoraPickByEmail.get(u.email)?.goalkeeper) ===
+        normalizeKey(zamoraResult.goalkeeper)
+    ) {
+      guanteDeOroPoints = 10;
+      points += 10;
+    }
+
     return {
       email: u.email,
       role: u.role,
       nick: u.nick ?? null,
       exactHits,
       outcomeHits,
+      botaDeOroPoints,
+      balonDeOroPoints,
+      guanteDeOroPoints,
       points,
     };
   });

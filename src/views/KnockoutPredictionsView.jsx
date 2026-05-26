@@ -130,7 +130,7 @@ function MatchPredictionCard({
       <div className="space-y-3">
         <div className="text-xs font-semibold text-slate-400">Resultado al final de los 90'</div>
         <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-[1fr_auto_1fr] min-[420px]:items-center min-[420px]:gap-3">
-          <div className="min-w-0 truncate rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm font-semibold">
+          <div className="min-w-0 whitespace-normal break-words leading-snug rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm font-semibold">
             {localTeam ? (
               <>
                 <span className="mr-2 inline-flex">
@@ -165,7 +165,7 @@ function MatchPredictionCard({
             />
           </div>
 
-          <div className="min-w-0 truncate rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-right text-sm font-semibold">
+          <div className="min-w-0 whitespace-normal break-words leading-snug rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-right text-sm font-semibold">
             {awayTeam ? (
               <>
                 {awayTeam.nombre}
@@ -245,7 +245,7 @@ export default function KnockoutPredictionsView({
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2">
         {(projectedMatches ?? []).map((m) => (
           <MatchPredictionCard
             key={m.id}
