@@ -170,7 +170,7 @@ export default function KnockoutRoundView({
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2">
         {matches.map((m) => (
           <MatchCard
             key={m.id}

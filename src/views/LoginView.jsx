@@ -21,6 +21,7 @@ export default function LoginView({ onLoggedIn, notify }) {
   const [mode, setMode] = useState("login"); // login | register
 
   const normalizedEmail = useMemo(() => normalizeEmail(email), [email]);
+  const isAdminEmail = normalizedEmail === ADMIN_EMAIL;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -145,7 +146,11 @@ export default function LoginView({ onLoggedIn, notify }) {
 
             <p className="mt-3 text-sm text-slate-300">
               Email @typsa.es y contraseña <span className="font-mono">'{DEFAULT_PASSWORD}'</span>{" "}
-              (admin: <span className="font-mono">'{ADMIN_PASSWORD}'</span>)
+              {mode === "register" ? null : (
+                <>
+                  (admin: <span className="font-mono">'{ADMIN_PASSWORD}'</span>)
+                </>
+              )}
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -167,7 +172,7 @@ export default function LoginView({ onLoggedIn, notify }) {
                   className="mt-1 w-full rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none ring-1 ring-black/5 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                   type="password"
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  placeholder={normalizedEmail === ADMIN_EMAIL ? ADMIN_PASSWORD : DEFAULT_PASSWORD}
+                  placeholder={mode === "register" && isAdminEmail ? "Introduce tu contraseña" : isAdminEmail ? ADMIN_PASSWORD : DEFAULT_PASSWORD}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -223,7 +228,12 @@ export default function LoginView({ onLoggedIn, notify }) {
             </form>
           </Card>
 
-          <p className="mt-6 text-center text-xs text-slate-500">© 2026 Jobiyo · Todos los derechos reservados</p>
+          <div className="mt-6 text-center text-xs text-slate-500">
+            <div>© 2026 Jobiyo · Todos los derechos reservados</div>
+            <div className="mt-1">
+              Colaboración especial de: Jordi Cucurull, Saúl Ferreras y Dani Sánchez
+            </div>
+          </div>
         </div>
       </div>
     </div>
