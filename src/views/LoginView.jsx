@@ -2,7 +2,14 @@ import { useMemo, useState } from "react";
 import Button from "../components/Button.jsx";
 import Card from "../components/Card.jsx";
 import bannerImg from "../assets/mundial2026-typsa_16x9.png";
-import { isAllowedEmail, normalizeEmail, saveSessionSid } from "../utils/authStorage.js";
+import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  DEFAULT_PASSWORD,
+  isAllowedEmail,
+  normalizeEmail,
+  saveSessionSid,
+} from "../utils/authStorage.js";
 import { apiLogin, apiLoginSupabase } from "../utils/api.js";
 import { supabase } from "../utils/supabaseClient.js";
 
@@ -35,6 +42,11 @@ export default function LoginView({ onLoggedIn, notify }) {
       }
       if (!password) {
         notify({ tone: "error", message: "Introduce una contraseña." });
+        return;
+      }
+      const expectedPassword = normalizedEmail === ADMIN_EMAIL ? ADMIN_PASSWORD : DEFAULT_PASSWORD;
+      if (password !== expectedPassword) {
+        notify({ tone: "error", message: "Contraseña incorrecta." });
         return;
       }
 
@@ -132,7 +144,8 @@ export default function LoginView({ onLoggedIn, notify }) {
             <h1 className="text-2xl font-black tracking-tight text-slate-100">Acceso de usuarios</h1>
 
             <p className="mt-3 text-sm text-slate-300">
-              Email @typsa.es y contraseña <span className="font-mono">'mundial2026'</span>
+              Email @typsa.es y contraseña <span className="font-mono">'{DEFAULT_PASSWORD}'</span>{" "}
+              (admin: <span className="font-mono">'{ADMIN_PASSWORD}'</span>)
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -154,7 +167,7 @@ export default function LoginView({ onLoggedIn, notify }) {
                   className="mt-1 w-full rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-100 outline-none ring-1 ring-black/5 placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                   type="password"
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  placeholder="mundial2026"
+                  placeholder={normalizedEmail === ADMIN_EMAIL ? ADMIN_PASSWORD : DEFAULT_PASSWORD}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -216,4 +229,3 @@ export default function LoginView({ onLoggedIn, notify }) {
     </div>
   );
 }
-

@@ -1,5 +1,10 @@
 import crypto from "node:crypto";
-import { ADMIN_EMAIL, ALLOWED_DOMAIN, DEFAULT_PASSWORD } from "../src/utils/authStorage.js";
+import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  ALLOWED_DOMAIN,
+  DEFAULT_PASSWORD,
+} from "../src/utils/authStorage.js";
 import { dbGet, dbRun, persistDb } from "./db.js";
 
 export function normalizeEmail(email) {
@@ -89,6 +94,8 @@ export async function upsertUser(db, email, nick = null) {
   return { status: "created", user: { email: normalized, role, nick: safeNick, createdAt } };
 }
 
-export function verifyPassword(password) {
-  return password === DEFAULT_PASSWORD;
+export function verifyPassword(email, password) {
+  const normalized = normalizeEmail(email);
+  if (normalized === ADMIN_EMAIL) return String(password) === ADMIN_PASSWORD;
+  return String(password) === DEFAULT_PASSWORD;
 }

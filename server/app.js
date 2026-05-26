@@ -293,7 +293,7 @@ app.post("/api/login", async (req, res) => {
     res.status(400).json({ error: "invalid_email" });
     return;
   }
-  if (!verifyPassword(password)) {
+  if (!verifyPassword(email, password)) {
     res.status(400).json({ error: "invalid_password" });
     return;
   }
@@ -339,7 +339,7 @@ app.post("/api/register", async (req, res) => {
     res.status(400).json({ error: "invalid_email" });
     return;
   }
-  if (!verifyPassword(password)) {
+  if (!verifyPassword(email, password)) {
     res.status(400).json({ error: "invalid_password" });
     return;
   }
@@ -513,13 +513,10 @@ app.put("/api/predictions/me", async (req, res) => {
 
 function normalizeGoleadoresPicks(picks) {
   const base = Array.isArray(picks) ? picks : [];
-  const out = [0, 1, 2].map((idx) => {
-    const row = base[idx] ?? {};
-    const team = String(row?.team ?? "").trim();
-    const player = String(row?.player ?? "").trim();
-    return { team, player };
-  });
-  return out;
+  const row = base[0] ?? {};
+  const team = String(row?.team ?? "").trim();
+  const player = String(row?.player ?? "").trim();
+  return [{ team, player }];
 }
 
 function normalizeZamoraPick(pick) {
@@ -557,7 +554,8 @@ app.put("/api/goleadores/me", async (req, res) => {
   const email = req.user.email;
   const picks = normalizeGoleadoresPicks(req.body?.picks);
   const updatedAt = new Date().toISOString();
-  const picksValue = db?.__dbKind === "pg" ? picks : JSON.stringify(picks);
+  // Postgres treats JS arrays as PG array params; JSONB needs a JSON string.
+  const picksValue = JSON.stringify(picks);
   await dbRun(
     db,
     "INSERT INTO goleadores_picks (email, picks_json, updated_at) VALUES (?, ?, ?) ON CONFLICT(email) DO UPDATE SET picks_json=excluded.picks_json, updated_at=excluded.updated_at",
@@ -658,7 +656,7 @@ app.put("/api/admin/goleadores-result", async (req, res) => {
   }
   const picks = normalizeGoleadoresPicks(req.body?.picks);
   const updatedAt = new Date().toISOString();
-  const picksValue = db?.__dbKind === "pg" ? picks : JSON.stringify(picks);
+  const picksValue = JSON.stringify(picks);
   await dbRun(
     db,
     "INSERT INTO goleadores_result (id, picks_json, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET picks_json=excluded.picks_json, updated_at=excluded.updated_at",

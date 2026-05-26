@@ -15,23 +15,11 @@ function normalizePick(pick) {
   };
 }
 
-function encodeValue(team, player) {
-  return JSON.stringify({ team: String(team ?? ""), player: String(player ?? "") });
-}
-
-function decodeValue(value) {
-  try {
-    const obj = JSON.parse(String(value ?? ""));
-    return normalizePick(obj);
-  } catch {
-    return normalizePick(null);
-  }
-}
-
 export default function MvpView({ userEmail, predictionsLocked = false }) {
-  const { allOptions } = useMemo(() => {
+  const { teamsByGroup, playersByTeam } = useMemo(() => {
     const rows = parseCsv(jugadoresCsv);
     const byGroup = new Map();
+    const players = new Map();
 
     rows.forEach((r) => {
       const grupo = String(r.grupo ?? "").trim();
@@ -39,29 +27,25 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
       const jugador = String(r.jugador ?? "").trim();
       if (!equipo || !jugador) return;
       const groupKey = grupo || "Otros";
-      if (!byGroup.has(groupKey)) byGroup.set(groupKey, []);
-      byGroup.get(groupKey).push({ team: equipo, player: jugador });
+      if (!byGroup.has(groupKey)) byGroup.set(groupKey, new Set());
+      byGroup.get(groupKey).add(equipo);
+      if (!players.has(equipo)) players.set(equipo, new Set());
+      players.get(equipo).add(jugador);
     });
 
-    const options = [];
+    const teamsByGroupObj = {};
     [...byGroup.entries()]
       .sort(([a], [b]) => a.localeCompare(b, "es"))
-      .forEach(([group, list]) => {
-        const sorted = list.sort((a, b) => {
-          const pa = `${a.player} (${a.team})`;
-          const pb = `${b.player} (${b.team})`;
-          return pa.localeCompare(pb, "es");
-        });
-        sorted.forEach((p) => {
-          options.push({
-            value: encodeValue(p.team, p.player),
-            label: `${p.player} (${p.team})`,
-            group,
-          });
-        });
+      .forEach(([group, set]) => {
+        teamsByGroupObj[group] = [...set].sort((a, b) => a.localeCompare(b, "es"));
       });
 
-    return { allOptions: options };
+    const playersByTeamObj = {};
+    [...players.entries()].forEach(([team, set]) => {
+      playersByTeamObj[team] = [...set].sort((a, b) => a.localeCompare(b, "es"));
+    });
+
+    return { teamsByGroup: teamsByGroupObj, playersByTeam: playersByTeamObj };
   }, []);
 
   const [pick, setPick] = useState(() => normalizePick(null));
@@ -135,6 +119,16 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
     }
   }
 
+  const teamOptions = useMemo(() => {
+    const out = [];
+    Object.entries(teamsByGroup).forEach(([group, teams]) => {
+      teams.forEach((team) => out.push({ value: team, label: team, group }));
+    });
+    return out;
+  }, [teamsByGroup]);
+
+  const players = pick.team ? playersByTeam[pick.team] ?? [] : [];
+
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
@@ -165,15 +159,28 @@ export default function MvpView({ userEmail, predictionsLocked = false }) {
       </div>
 
       <Card className="p-4">
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <SelectMenu
+            label="Equipo"
+            placeholder="Selecciona equipo"
+            value={pick.team}
+            disabled={predictionsLocked || !userEmail}
+            options={teamOptions}
+            onChange={(team) => {
+              const allowed = team ? playersByTeam[team] ?? [] : [];
+              const nextPlayer = allowed.includes(pick.player) ? pick.player : "";
+              setPick((prev) => ({ ...prev, team, player: nextPlayer }));
+            }}
+          />
+
           <SelectMenu
             label="Jugador"
-            placeholder="Selecciona jugador"
-            value={pick.player ? encodeValue(pick.team, pick.player) : ""}
-            disabled={predictionsLocked || !userEmail}
-            options={allOptions}
-            searchable
-            onChange={(val) => setPick(decodeValue(val))}
+            placeholder={pick.team ? "Selecciona jugador" : "Selecciona un equipo primero"}
+            value={pick.player}
+            disabled={predictionsLocked || !userEmail || !pick.team}
+            searchable={players.length > 10}
+            options={players.map((p) => ({ value: p, label: p }))}
+            onChange={(player) => setPick((prev) => ({ ...prev, player }))}
           />
         </div>
       </Card>

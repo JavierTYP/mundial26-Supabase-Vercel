@@ -3,6 +3,7 @@ const SESSION_KEY = "mundial2026_session_v1";
 const SESSION_SID_KEY = "mundial2026_sid_v1";
 
 export const DEFAULT_PASSWORD = "mundial2026";
+export const ADMIN_PASSWORD = "adminmundial";
 export const ADMIN_EMAIL = "admin@typsa.es";
 export const ALLOWED_DOMAIN = "typsa.es";
 
