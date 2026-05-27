@@ -1371,7 +1371,7 @@ export default function App() {
           <footer className="border-t border-slate-800 py-8 text-center text-sm text-slate-400">
             <div>© 2026 Jobiyo · Todos los derechos reservados</div>
             <div className="mt-2 text-xs text-slate-500">
-              Colaboración especial de: Jordi Cucurull, Saúl Ferreras y Dani Sánchez
+              Colaboración especial Jordi Cucurull, Saúl Ferreras y Dani Sánchez
             </div>
           </footer>
         </main>
