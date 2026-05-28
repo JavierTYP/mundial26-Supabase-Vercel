@@ -178,7 +178,7 @@ export default function KnockoutRoundView({
             teamsById={teamsById}
             disabled={disabled}
             onSave={(l, v, winner) => {
-              if (roundKey === "final") onUpdateFinal(l, v, winner);
+              if (roundKey === "final") onUpdateFinal(m.id, l, v, winner);
               else onUpdateRoundMatch(roundKey, m.id, l, v, winner);
             }}
           />

@@ -45,6 +45,7 @@ function buildMatchesIndex(torneo) {
   addList(torneo?.cuartos);
   addList(torneo?.semifinales);
   if (torneo?.final?.id) map.set(torneo.final.id, torneo.final);
+  if (torneo?.thirdPlace?.id) map.set(torneo.thirdPlace.id, torneo.thirdPlace);
 
   return map;
 }

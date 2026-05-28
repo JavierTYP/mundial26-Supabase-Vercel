@@ -31,11 +31,11 @@ export default function ScoreboardView({ grupos }) {
         <p className="text-sm text-slate-300">
           0 pts si no acierta ganador; 1 pt si acierta ganador/empate; 4 pts si acierta marcador exacto.
           <br />
-          10 puntos por acertar el &quot;Balón de oro&quot;.
+          +10 puntos por 'Bal&#243;n de oro'.
           <br />
-          10 puntos por acertar la &quot;Bota de oro&quot;.
+          +10 puntos por 'Bota de oro'.
           <br />
-          10 puntos por acertar el &quot;Guante de oro&quot;.
+          +10 puntos por 'Gualte de oro'.
         </p>
       </div>
 

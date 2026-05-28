@@ -76,6 +76,16 @@ function mergeFinal(prev, next) {
   };
 }
 
+function mergeThirdPlace(prev, next) {
+  if (!prev) return next;
+  if (!next) return prev;
+  return {
+    ...prev,
+    local: next.local,
+    visitante: next.visitante,
+  };
+}
+
 function participantsSignature(matches) {
   return matches.map((m) => `${m.id}:${m.local ?? ""}-${m.visitante ?? ""}`).join("|");
 }
@@ -297,6 +307,36 @@ function syncKnockoutFromGroups(state) {
   const nextCuartos = mergeParticipants(state.cuartos, advanceRound(state.cuartos, nextOctavos));
   const nextSemis = mergeParticipants(state.semifinales, advanceRound(state.semifinales, nextCuartos));
   const nextFinal = mergeFinal(state.final, advanceRound([state.final], nextSemis)[0]);
+
+  const loserTeamId = (match) => {
+    if (!match) return null;
+    if (match?.ganador != null) {
+      if (match?.local == null || match?.visitante == null) return null;
+      if (match.ganador === match.local) return match.visitante;
+      if (match.ganador === match.visitante) return match.local;
+      return null;
+    }
+    const l = match?.resultado?.local;
+    const v = match?.resultado?.visitante;
+    if (l == null || v == null) return null;
+    if (match?.local == null || match?.visitante == null) return null;
+    if (l > v) return match.visitante;
+    if (v > l) return match.local;
+    return null;
+  };
+
+  const semi1 = nextSemis.find((m) => matchNumber(m?.id) === 1) ?? null;
+  const semi2 = nextSemis.find((m) => matchNumber(m?.id) === 2) ?? null;
+  const computedThirdPlace = {
+    id: "3P-31",
+    local: loserTeamId(semi1),
+    visitante: loserTeamId(semi2),
+    resultado: { local: null, visitante: null },
+    ganador: null,
+    emparejamiento: "Perdedor 02-S1 vs Perdedor 02-S2",
+  };
+  const nextThirdPlace = mergeThirdPlace(state.thirdPlace, computedThirdPlace);
+
   return {
     ...state,
     dieciseisavos: syncedDieciseisavos,
@@ -304,6 +344,7 @@ function syncKnockoutFromGroups(state) {
     cuartos: nextCuartos,
     semifinales: nextSemis,
     final: nextFinal,
+    thirdPlace: nextThirdPlace,
   };
 }
 
@@ -640,7 +681,7 @@ export default function App() {
       });
   }
 
-  function updateFinalMatch(local, visitante, ganadorPicked = null) {
+  function updateFinalMatch(matchIdOrLocal, localOrVisitante, visitanteOrGanadorPicked = null, maybeGanadorPicked = null) {
     if (!isAdmin) {
       setNotification({
         tone: "error",
@@ -653,15 +694,32 @@ export default function App() {
       return;
     }
 
+    const matchId =
+      typeof matchIdOrLocal === "string" ? matchIdOrLocal : "FI-F1";
+    const local =
+      typeof matchIdOrLocal === "string" ? localOrVisitante : matchIdOrLocal;
+    const visitante =
+      typeof matchIdOrLocal === "string" ? visitanteOrGanadorPicked : localOrVisitante;
+    const ganadorPicked =
+      typeof matchIdOrLocal === "string" ? maybeGanadorPicked : visitanteOrGanadorPicked;
+
     const hydrated = hydrateTournamentState(state);
+
+    const target =
+      matchId === "3P-31"
+        ? hydrated.thirdPlace ?? { id: "3P-31", local: null, visitante: null, resultado: { local: null, visitante: null } }
+        : hydrated.final;
+
     const ganador = winnerId({
-      ...hydrated.final,
+      ...target,
       resultado: { local, visitante },
-      ganador: ganadorPicked ?? hydrated.final?.ganador ?? null,
+      ganador: ganadorPicked ?? target?.ganador ?? null,
     });
     const nextSnapshot = syncKnockoutFromGroups({
       ...hydrated,
-      final: { ...hydrated.final, resultado: { local, visitante }, ganador },
+      ...(matchId === "3P-31"
+        ? { thirdPlace: { ...target, resultado: { local, visitante }, ganador } }
+        : { final: { ...hydrated.final, resultado: { local, visitante }, ganador } }),
       metadata: { ...(hydrated.metadata ?? {}), ultimaActualizacion: new Date().toISOString() },
     });
 
@@ -1361,7 +1419,7 @@ export default function App() {
               torneo={state}
               title="Final"
               roundKey="final"
-              matches={[state.final].filter(Boolean)}
+              matches={[state.final, state.thirdPlace].filter(Boolean)}
               onUpdateRoundMatch={updateKnockoutMatch}
               onUpdateFinal={updateFinalMatch}
               disabled={!isAdmin || resultsLocked}

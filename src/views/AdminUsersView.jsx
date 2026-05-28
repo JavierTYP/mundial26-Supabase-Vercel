@@ -2,6 +2,42 @@ import Button from "../components/Button.jsx";
 import Card from "../components/Card.jsx";
 import { ADMIN_EMAIL } from "../utils/authStorage.js";
 
+function PaidToggle({ checked, disabled, onChange }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange?.(!checked)}
+      className={[
+        "relative h-8 w-[86px] select-none rounded-full border p-1 transition",
+        checked ? "border-emerald-500/40 bg-emerald-500/80" : "border-red-500/40 bg-red-500/80",
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500/30",
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-3 text-[11px] font-black tracking-wide text-white/95",
+          "drop-shadow-sm",
+        ].join(" ")}
+      >
+        <span className={checked ? "opacity-100" : "opacity-40"}>ON</span>
+        <span className={checked ? "opacity-40" : "opacity-100"}>OFF</span>
+      </span>
+
+      <span
+        aria-hidden="true"
+        className={[
+          "pointer-events-none relative block h-6 w-6 rounded-full bg-white shadow-md ring-1 ring-black/10 transition-transform",
+          checked ? "translate-x-[52px]" : "translate-x-0",
+        ].join(" ")}
+      />
+    </button>
+  );
+}
+
 export default function AdminUsersView({
   users,
   onDeleteUser,
@@ -70,16 +106,14 @@ export default function AdminUsersView({
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-200">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 accent-red-500"
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+                      <PaidToggle
                         checked={Boolean(u.paid)}
                         disabled={!onSetUserPaid}
-                        onChange={(e) => onSetUserPaid?.(u.email, e.target.checked)}
+                        onChange={(next) => onSetUserPaid?.(u.email, next)}
                       />
-                      Paid
-                    </label>
+                      <span>Paid</span>
+                    </div>
                     <Button
                       variant="secondary"
                       disabled={isAdmin}
