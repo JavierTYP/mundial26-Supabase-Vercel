@@ -226,7 +226,7 @@ export default function LoginView({ onLoggedIn, notify }) {
           <div className="mt-6 text-center text-xs text-slate-500">
             <div>© 2026 Jobiyo · Todos los derechos reservados</div>
             <div className="mt-1">
-              Colaboración especial de: Jordi Cucurull, Saúl Ferreras y Dani Sánchez
+              
             </div>
           </div>
         </div>
