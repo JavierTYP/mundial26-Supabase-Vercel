@@ -145,7 +145,8 @@ export default function LoginView({ onLoggedIn, notify }) {
             <h1 className="text-2xl font-black tracking-tight text-slate-100">Acceso de usuarios</h1>
 
             <p className="mt-3 text-sm text-slate-300">
-              Email @typsa.es y contraseña <span className="font-mono">'{DEFAULT_PASSWORD}'</span>
+              Email <span className="font-mono">'tuemail@typsa.es'</span> y contraseña{" "}
+              <span className="font-mono">'{DEFAULT_PASSWORD}'</span>
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
