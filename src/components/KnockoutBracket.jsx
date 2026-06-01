@@ -160,7 +160,9 @@ export default function KnockoutBracket({
         {description ? <p className="text-sm text-slate-300">{description}</p> : null}
       </div>
 
-      <div className="mt-4 overflow-x-auto no-scrollbar">
+      <div className="relative mt-4 overflow-x-auto no-scrollbar">
+        {/* Subtle hint that the bracket is horizontally scrollable on smaller screens */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-slate-950/60 to-transparent" />
         <div className="min-w-[1100px]">
           <div className="grid grid-cols-9 gap-4 text-center text-[11px] font-black uppercase tracking-wide text-slate-400">
             <div>16avos</div>

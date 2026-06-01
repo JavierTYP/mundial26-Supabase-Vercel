@@ -1,5 +1,5 @@
 import { groupIsComplete, calculateStandings } from "./standings.js";
-import annexCThirdsMapping from "../data/annexC_2026_thirds_mapping.json";
+import annexCThirdsMapping from "../data/annexC_2026_thirds_mapping.json" assert { type: "json" };
 
 export function getClassifiedByGroup(grupos, resultsByMatchId = null) {
   const standingsOpts = resultsByMatchId
@@ -7,7 +7,10 @@ export function getClassifiedByGroup(grupos, resultsByMatchId = null) {
     : { fallbackToPartidoResultado: true };
   const out = {};
   for (const [gid, grupo] of Object.entries(grupos)) {
-    if (!groupIsComplete(grupo, resultsByMatchId, standingsOpts)) continue;
+    // For prediction mode (resultsByMatchId provided), allow partial group input so the
+    // bracket can fill progressively as the user enters predictions.
+    // For real results mode, keep the "only when complete" behavior.
+    if (!resultsByMatchId && !groupIsComplete(grupo, resultsByMatchId, standingsOpts)) continue;
     const standings = calculateStandings(grupo, resultsByMatchId, standingsOpts);
     out[gid] = { first: standings[0], second: standings[1], third: standings[2] };
   }
@@ -79,7 +82,8 @@ export function buildDieciseisavos(dieciseisavosTemplate, grupos, resultsByMatch
   const bestThirds = getBestThirds(grupos, 8, resultsByMatchId);
   const qualifiedThirdGroups = [...new Set(bestThirds.map((x) => x.gid))].sort();
   const combinationKey = qualifiedThirdGroups.join("");
-  const assignment = annexCThirdsMapping?.[combinationKey] ?? null;
+  // Only resolve Annex C assignment once we have 8 qualifying third-placed groups.
+  const assignment = qualifiedThirdGroups.length === 8 ? annexCThirdsMapping?.[combinationKey] ?? null : null;
 
   const thirdsByGroup = {};
   for (const { gid, team } of bestThirds) {
