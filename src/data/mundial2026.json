@@ -1824,8 +1824,8 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "2A vs 2B",
-      "fecha": "2026-06-28"
+      "emparejamiento": "1E vs 3ABCDF",
+      "fecha": "2026-06-29"
     },
     {
       "id": "16-D2",
@@ -1836,8 +1836,8 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1E vs 3ABCDF",
-      "fecha": "2026-06-29"
+      "emparejamiento": "1I vs 3CDFGH",
+      "fecha": "2026-06-30"
     },
     {
       "id": "16-D3",
@@ -1848,8 +1848,8 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1F vs 2C",
-      "fecha": "2026-06-29"
+      "emparejamiento": "2A vs 2B",
+      "fecha": "2026-06-28"
     },
     {
       "id": "16-D4",
@@ -1860,8 +1860,8 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1C vs 2F",
-      "fecha": "2026-06-29"
+      "emparejamiento": "1F vs 2C",
+      "fecha": "2026-06-30"
     },
     {
       "id": "16-D5",
@@ -1872,8 +1872,8 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1I vs 3CDFGH",
-      "fecha": "2026-06-30"
+      "emparejamiento": "1C vs 2F",
+      "fecha": "2026-06-29"
     },
     {
       "id": "16-D6",
@@ -1920,35 +1920,11 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1D vs 3BEFIJ",
-      "fecha": "2026-07-01"
-    },
-    {
-      "id": "16-D10",
-      "local": null,
-      "visitante": null,
-      "resultado": {
-        "local": null,
-        "visitante": null
-      },
-      "ganador": null,
-      "emparejamiento": "1G vs 3AEHIJ",
-      "fecha": "2026-07-01"
-    },
-    {
-      "id": "16-D11",
-      "local": null,
-      "visitante": null,
-      "resultado": {
-        "local": null,
-        "visitante": null
-      },
-      "ganador": null,
       "emparejamiento": "2K vs 2L",
       "fecha": "2026-07-02"
     },
     {
-      "id": "16-D12",
+      "id": "16-D10",
       "local": null,
       "visitante": null,
       "resultado": {
@@ -1960,7 +1936,7 @@
       "fecha": "2026-07-02"
     },
     {
-      "id": "16-D13",
+      "id": "16-D11",
       "local": null,
       "visitante": null,
       "resultado": {
@@ -1968,11 +1944,23 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1B vs 3EFGIJ",
-      "fecha": "2026-07-02"
+      "emparejamiento": "1D vs 3BEFIJ",
+      "fecha": "2026-07-01"
     },
     {
-      "id": "16-D14",
+      "id": "16-D12",
+      "local": null,
+      "visitante": null,
+      "resultado": {
+        "local": null,
+        "visitante": null
+      },
+      "ganador": null,
+      "emparejamiento": "1G vs 3AEHIJ",
+      "fecha": "2026-07-01"
+    },
+    {
+      "id": "16-D13",
       "local": null,
       "visitante": null,
       "resultado": {
@@ -1984,6 +1972,18 @@
       "fecha": "2026-07-03"
     },
     {
+      "id": "16-D14",
+      "local": null,
+      "visitante": null,
+      "resultado": {
+        "local": null,
+        "visitante": null
+      },
+      "ganador": null,
+      "emparejamiento": "2D vs 2G",
+      "fecha": "2026-07-03"
+    },
+    {
       "id": "16-D15",
       "local": null,
       "visitante": null,
@@ -1992,8 +1992,8 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1K vs 3DEIJL",
-      "fecha": "2026-07-03"
+      "emparejamiento": "1B vs 3EFGIJ",
+      "fecha": "2026-07-02"
     },
     {
       "id": "16-D16",
@@ -2004,7 +2004,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "2D vs 2G",
+      "emparejamiento": "1K vs 3DEIJL",
       "fecha": "2026-07-03"
     }
   ],
@@ -2018,7 +2018,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D2 vs 16-D5",
+      "emparejamiento": "16-D1 vs 16-D2",
       "fecha": "2026-07-04"
     },
     {
@@ -2030,7 +2030,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D1 vs 16-D3",
+      "emparejamiento": "16-D3 vs 16-D4",
       "fecha": "2026-07-04"
     },
     {
@@ -2042,7 +2042,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D4 vs 16-D6",
+      "emparejamiento": "16-D5 vs 16-D6",
       "fecha": "2026-07-05"
     },
     {
@@ -2066,7 +2066,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D11 vs 16-D12",
+      "emparejamiento": "16-D9 vs 16-D10",
       "fecha": "2026-07-06"
     },
     {
@@ -2078,7 +2078,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D9 vs 16-D10",
+      "emparejamiento": "16-D11 vs 16-D12",
       "fecha": "2026-07-06"
     },
     {
@@ -2090,7 +2090,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D14 vs 16-D16",
+      "emparejamiento": "16-D13 vs 16-D14",
       "fecha": "2026-07-07"
     },
     {
@@ -2102,7 +2102,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "16-D13 vs 16-D15",
+      "emparejamiento": "16-D15 vs 16-D16",
       "fecha": "2026-07-07"
     }
   ],
