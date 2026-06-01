@@ -1,4 +1,5 @@
 import { groupIsComplete, calculateStandings } from "./standings.js";
+import annexCThirdsMapping from "../data/annexC_2026_thirds_mapping.json";
 
 export function getClassifiedByGroup(grupos, resultsByMatchId = null) {
   const standingsOpts = resultsByMatchId
@@ -73,56 +74,56 @@ function rankGroupFinishers(grupos, position, resultsByMatchId = null) {
 }
 
 export function buildDieciseisavos(dieciseisavosTemplate, grupos, resultsByMatchId = null) {
-  // Deterministic bracket based on performance ranking (not the full FIFA Annex-C mapping).
-  // Seeds:
-  // - W1..W12: ranked group winners
-  // - R1..R12: ranked runners-up
-  // - T1..T8 : ranked best third-placed teams
-  const winners = rankGroupFinishers(grupos, "first", resultsByMatchId);
-  const runnersUp = rankGroupFinishers(grupos, "second", resultsByMatchId);
-  const thirds = getBestThirds(grupos, 8, resultsByMatchId).map((x) => ({ ...x }));
+  const classified = getClassifiedByGroup(grupos, resultsByMatchId);
 
-  const seeds = [];
-  for (let i = 0; i < 8; i += 1) {
-    seeds.push({
-      local: winners[i]?.team?.id ?? null,
-      visitante: thirds[7 - i]?.team?.id ?? null,
-      emparejamiento:
-        winners[i] && thirds[7 - i]
-          ? `W${i + 1} (${winners[i].gid}1) vs T${8 - i} (${thirds[7 - i].gid}3)`
-          : `W${i + 1} vs T${8 - i}`,
-    });
+  const bestThirds = getBestThirds(grupos, 8, resultsByMatchId);
+  const qualifiedThirdGroups = [...new Set(bestThirds.map((x) => x.gid))].sort();
+  const combinationKey = qualifiedThirdGroups.join("");
+  const assignment = annexCThirdsMapping?.[combinationKey] ?? null;
+
+  const thirdsByGroup = {};
+  for (const { gid, team } of bestThirds) {
+    if (team?.id) thirdsByGroup[gid] = team;
   }
 
-  for (let i = 0; i < 4; i += 1) {
-    seeds.push({
-      local: winners[8 + i]?.team?.id ?? null,
-      visitante: runnersUp[11 - i]?.team?.id ?? null,
-      emparejamiento:
-        winners[8 + i] && runnersUp[11 - i]
-          ? `W${9 + i} (${winners[8 + i].gid}1) vs R${12 - i} (${runnersUp[11 - i].gid}2)`
-          : `W${9 + i} vs R${12 - i}`,
-    });
-  }
+  const resolveThirdForWinner = (winnerGroupId) => {
+    if (!assignment) return null;
+    const colIndexByWinner = { A: 0, B: 1, D: 2, E: 3, G: 4, I: 5, K: 6, L: 7 };
+    const idx = colIndexByWinner[winnerGroupId];
+    if (idx == null) return null;
+    const thirdGroupId = assignment[idx];
+    return thirdsByGroup[thirdGroupId] ?? null;
+  };
 
-  for (let i = 0; i < 4; i += 1) {
-    seeds.push({
-      local: runnersUp[i]?.team?.id ?? null,
-      visitante: runnersUp[7 - i]?.team?.id ?? null,
-      emparejamiento:
-        runnersUp[i] && runnersUp[7 - i]
-          ? `R${i + 1} (${runnersUp[i].gid}2) vs R${8 - i} (${runnersUp[7 - i].gid}2)`
-          : `R${i + 1} vs R${8 - i}`,
-    });
-  }
+  const resolveR32Token = (token) => {
+    const t = String(token ?? "").trim();
+    if (!t) return null;
+    if (/^[12][A-L]$/.test(t)) return resolveToken(t, classified);
+    // "3ABCDF" etc. The actual group is determined by Annex C and depends on the winner group on the other side.
+    if (/^3[A-L]{2,}$/.test(t)) return { __thirdPlaceholder: true, options: t.slice(1) };
+    return null;
+  };
 
-  return dieciseisavosTemplate.map((m, idx) => {
-    const s = seeds[idx] ?? { local: null, visitante: null, emparejamiento: m.emparejamiento };
+  return dieciseisavosTemplate.map((m) => {
+    const [aRaw, bRaw] = String(m.emparejamiento).split("vs").map((s) => s.trim());
+    const a = resolveR32Token(aRaw);
+    const b = resolveR32Token(bRaw);
+
+    let localTeam = a?.__thirdPlaceholder ? null : a;
+    let awayTeam = b?.__thirdPlaceholder ? null : b;
+
+    if (a?.__thirdPlaceholder && /^[1][A-L]$/.test(bRaw)) {
+      const winnerGroupId = bRaw.slice(1);
+      localTeam = resolveThirdForWinner(winnerGroupId);
+    } else if (b?.__thirdPlaceholder && /^[1][A-L]$/.test(aRaw)) {
+      const winnerGroupId = aRaw.slice(1);
+      awayTeam = resolveThirdForWinner(winnerGroupId);
+    }
+
     return {
       ...m,
-      local: s.local,
-      visitante: s.visitante,
-      emparejamiento: s.emparejamiento ?? m.emparejamiento,
+      local: localTeam?.id ?? null,
+      visitante: awayTeam?.id ?? null,
     };
   });
 }
