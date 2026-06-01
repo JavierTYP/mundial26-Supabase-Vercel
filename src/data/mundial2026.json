@@ -1872,59 +1872,11 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1C vs 2F",
-      "fecha": "2026-06-29"
+      "emparejamiento": "2K vs 2L",
+      "fecha": "2026-07-03"
     },
     {
       "id": "16-D6",
-      "local": null,
-      "visitante": null,
-      "resultado": {
-        "local": null,
-        "visitante": null
-      },
-      "ganador": null,
-      "emparejamiento": "2E vs 2I",
-      "fecha": "2026-06-30"
-    },
-    {
-      "id": "16-D7",
-      "local": null,
-      "visitante": null,
-      "resultado": {
-        "local": null,
-        "visitante": null
-      },
-      "ganador": null,
-      "emparejamiento": "1A vs 3CEFHI",
-      "fecha": "2026-06-30"
-    },
-    {
-      "id": "16-D8",
-      "local": null,
-      "visitante": null,
-      "resultado": {
-        "local": null,
-        "visitante": null
-      },
-      "ganador": null,
-      "emparejamiento": "1L vs 3EHIJK",
-      "fecha": "2026-07-01"
-    },
-    {
-      "id": "16-D9",
-      "local": null,
-      "visitante": null,
-      "resultado": {
-        "local": null,
-        "visitante": null
-      },
-      "ganador": null,
-      "emparejamiento": "2K vs 2L",
-      "fecha": "2026-07-02"
-    },
-    {
-      "id": "16-D10",
       "local": null,
       "visitante": null,
       "resultado": {
@@ -1936,7 +1888,7 @@
       "fecha": "2026-07-02"
     },
     {
-      "id": "16-D11",
+      "id": "16-D7",
       "local": null,
       "visitante": null,
       "resultado": {
@@ -1945,6 +1897,54 @@
       },
       "ganador": null,
       "emparejamiento": "1D vs 3BEFIJ",
+      "fecha": "2026-07-03"
+    },
+    {
+      "id": "16-D8",
+      "local": null,
+      "visitante": null,
+      "resultado": {
+        "local": null,
+        "visitante": null
+      },
+      "ganador": null,
+      "emparejamiento": "1G vs 3AEHIJ",
+      "fecha": "2026-07-02"
+    },
+    {
+      "id": "16-D9",
+      "local": null,
+      "visitante": null,
+      "resultado": {
+        "local": null,
+        "visitante": null
+      },
+      "ganador": null,
+      "emparejamiento": "1C vs 2F",
+      "fecha": "2026-06-29"
+    },
+    {
+      "id": "16-D10",
+      "local": null,
+      "visitante": null,
+      "resultado": {
+        "local": null,
+        "visitante": null
+      },
+      "ganador": null,
+      "emparejamiento": "2E vs 2I",
+      "fecha": "2026-06-30"
+    },
+    {
+      "id": "16-D11",
+      "local": null,
+      "visitante": null,
+      "resultado": {
+        "local": null,
+        "visitante": null
+      },
+      "ganador": null,
+      "emparejamiento": "1A vs 3CEFHI",
       "fecha": "2026-07-01"
     },
     {
@@ -1956,7 +1956,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "1G vs 3AEHIJ",
+      "emparejamiento": "1L vs 3EHIJK",
       "fecha": "2026-07-01"
     },
     {
@@ -2043,7 +2043,7 @@
       },
       "ganador": null,
       "emparejamiento": "16-D5 vs 16-D6",
-      "fecha": "2026-07-05"
+      "fecha": "2026-07-06"
     },
     {
       "id": "08-O4",
@@ -2055,7 +2055,7 @@
       },
       "ganador": null,
       "emparejamiento": "16-D7 vs 16-D8",
-      "fecha": "2026-07-05"
+      "fecha": "2026-07-06"
     },
     {
       "id": "08-O5",
@@ -2067,7 +2067,7 @@
       },
       "ganador": null,
       "emparejamiento": "16-D9 vs 16-D10",
-      "fecha": "2026-07-06"
+      "fecha": "2026-07-05"
     },
     {
       "id": "08-O6",
@@ -2079,7 +2079,7 @@
       },
       "ganador": null,
       "emparejamiento": "16-D11 vs 16-D12",
-      "fecha": "2026-07-06"
+      "fecha": "2026-07-05"
     },
     {
       "id": "08-O7",
@@ -2128,7 +2128,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "08-O5 vs 08-O6",
+      "emparejamiento": "08-O3 vs 08-O4",
       "fecha": "2026-07-10"
     },
     {
@@ -2140,7 +2140,7 @@
         "visitante": null
       },
       "ganador": null,
-      "emparejamiento": "08-O3 vs 08-O4",
+      "emparejamiento": "08-O5 vs 08-O6",
       "fecha": "2026-07-11"
     },
     {
