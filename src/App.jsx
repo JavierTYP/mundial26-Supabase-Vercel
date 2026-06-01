@@ -1261,7 +1261,7 @@ export default function App() {
 
               <KnockoutBracket
                 torneo={predictedKnockoutTorneo}
-                description="Se rellena automÃ¡ticamente a medida que introduces pronÃ³sticos."
+                description="Se rellena automáticamente cuando completas los pronósticos de cada grupo."
               />
             </section>
           ) : null}

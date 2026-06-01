@@ -264,7 +264,7 @@ export default function KnockoutPredictionsView({
 
       <KnockoutBracket
         torneo={predictedTorneo}
-        description="Se rellena automáticamente a medida que introduces pronósticos."
+        description="Se rellena automáticamente cuando completas los pronósticos de cada grupo."
       />
     </section>
   );

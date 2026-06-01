@@ -7,23 +7,14 @@ export function getClassifiedByGroup(grupos, resultsByMatchId = null) {
     : { fallbackToPartidoResultado: true };
   const out = {};
   for (const [gid, grupo] of Object.entries(grupos)) {
-    const hasAnyProvidedResult =
-      resultsByMatchId &&
-      (grupo?.partidos ?? []).some((p) => {
-        const r = resultsByMatchId?.[p.id] ?? null;
-        return r?.local != null && r?.visitante != null;
-      });
-
-    // For prediction mode (resultsByMatchId provided), allow partial group input so the
-    // bracket can fill progressively as the user enters predictions.
-    // For real results mode, keep the "only when complete" behavior.
+    // IMPORTANT:
+    // For predictions mode we only classify a group once ALL its matches have predicted scores.
+    // Otherwise we may prematurely (and incorrectly) determine the 8 best third-placed teams,
+    // which then drives the Annex C assignment for Round of 32 pairings.
     if (resultsByMatchId) {
-      // If the user hasn't entered any predictions for this group yet, don't infer a ranking
-      // from an all-null table (which would incorrectly classify teams by tie-breakers).
-      if (!hasAnyProvidedResult) continue;
-    } else if (!groupIsComplete(grupo, resultsByMatchId, standingsOpts)) {
-      continue;
-    }
+      if (!groupIsComplete(grupo, resultsByMatchId, { fallbackToPartidoResultado: false })) continue;
+    } else if (!groupIsComplete(grupo, resultsByMatchId, standingsOpts)) continue;
+
     const standings = calculateStandings(grupo, resultsByMatchId, standingsOpts);
     out[gid] = { first: standings[0], second: standings[1], third: standings[2] };
   }
