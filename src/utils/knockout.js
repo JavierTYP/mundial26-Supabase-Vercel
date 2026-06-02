@@ -87,7 +87,8 @@ export function buildDieciseisavos(dieciseisavosTemplate, grupos, resultsByMatch
   const qualifiedThirdGroups = [...new Set(bestThirds.map((x) => x.gid))].sort();
   const combinationKey = qualifiedThirdGroups.join("");
   // Only resolve Annex C assignment once we have 8 qualifying third-placed groups.
-  const assignment = qualifiedThirdGroups.length === 8 ? annexCThirdsMapping?.[combinationKey] ?? null : null;
+  const allGroupsComplete = Object.keys(classified).length === 12;
+  const assignment = (allGroupsComplete && qualifiedThirdGroups.length === 8) ? annexCThirdsMapping?.[combinationKey] ?? null : null;
 
   const thirdsByGroup = {};
   for (const { gid, team } of bestThirds) {
