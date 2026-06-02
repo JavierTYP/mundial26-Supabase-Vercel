@@ -796,7 +796,54 @@ app.get("/api/admin/predictions", async (req, res) => {
   for (const r of rows) {
     predictions[r.match_id] = { local: r.local, visitante: r.visitante, winner: r.winner ?? null };
   }
-  res.json({ email, predictions, predictionsLocked: await getPredictionsLocked() });
+
+  const [goleadoresRow, mvpRow, zamoraRow] = await Promise.all([
+    dbGet(db, "SELECT picks_json, updated_at FROM goleadores_picks WHERE email = ?", [email]),
+    dbGet(db, "SELECT pick_json, updated_at FROM mvp_picks WHERE email = ?", [email]),
+    dbGet(db, "SELECT pick_json, updated_at FROM zamora_picks WHERE email = ?", [email]),
+  ]);
+
+  const goleadoresRaw = goleadoresRow?.picks_json ?? null;
+  const goleadoresParsed =
+    goleadoresRaw && typeof goleadoresRaw === "string"
+      ? jsonOrNull(goleadoresRaw)
+      : goleadoresRaw && typeof goleadoresRaw === "object"
+        ? goleadoresRaw
+        : null;
+
+  const mvpRaw = mvpRow?.pick_json ?? null;
+  const mvpParsed =
+    mvpRaw && typeof mvpRaw === "string"
+      ? jsonOrNull(mvpRaw)
+      : mvpRaw && typeof mvpRaw === "object"
+        ? mvpRaw
+        : null;
+
+  const zamoraRaw = zamoraRow?.pick_json ?? null;
+  const zamoraParsed =
+    zamoraRaw && typeof zamoraRaw === "string"
+      ? jsonOrNull(zamoraRaw)
+      : zamoraRaw && typeof zamoraRaw === "object"
+        ? zamoraRaw
+        : null;
+
+  res.json({
+    email,
+    predictions,
+    goleadores: {
+      picks: normalizeGoleadoresPicks(goleadoresParsed),
+      updatedAt: goleadoresRow?.updated_at ?? null,
+    },
+    mvp: {
+      pick: normalizeMvpPick(mvpParsed),
+      updatedAt: mvpRow?.updated_at ?? null,
+    },
+    zamora: {
+      pick: normalizeZamoraPick(zamoraParsed),
+      updatedAt: zamoraRow?.updated_at ?? null,
+    },
+    predictionsLocked: await getPredictionsLocked(),
+  });
 });
 
 app.get("/api/admin/predictions/summary", async (req, res) => {

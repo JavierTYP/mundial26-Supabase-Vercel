@@ -1078,7 +1078,7 @@ export default function App() {
 
           {activeView === "admin-predictions" ? (
             isAdmin ? (
-              <AdminPredictionsView grupos={state.grupos} users={users} />
+              <AdminPredictionsView torneo={state} grupos={state.grupos} users={users} />
             ) : (
               <section className="space-y-2">
                 <h2 className="text-2xl font-black tracking-tight">Acceso denegado</h2>
