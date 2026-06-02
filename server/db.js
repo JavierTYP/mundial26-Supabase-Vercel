@@ -221,6 +221,7 @@ async function createPgDb() {
 
   // Migration: existing DBs may not have the paid column.
   await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS paid BOOLEAN NOT NULL DEFAULT FALSE");
+  await pool.query("ALTER TABLE predictions ADD COLUMN IF NOT EXISTS winner TEXT");
 
   return {
     db: pool,

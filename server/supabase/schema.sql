@@ -5,6 +5,9 @@
 -- Run this in Supabase SQL Editor if your DB user does not have permission
 -- to auto-create tables at runtime.
 
+alter table if exists public.predictions
+  add column if not exists winner text;
+
 create table if not exists public.zamora_picks (
   email text primary key references public.users(email) on delete cascade,
   pick_json jsonb not null,

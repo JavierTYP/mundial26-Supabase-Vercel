@@ -492,23 +492,47 @@ app.put("/api/predictions/me", async (req, res) => {
 
   const email = req.user.email;
   const matchId = migrateMatchId(req.body?.matchId);
-  const local = req.body?.local ?? null;
-  const visitante = req.body?.visitante ?? null;
-  const winner = req.body?.winner ?? null;
+  const local = req.body?.local === "" || req.body?.local == null ? null : Number.parseInt(req.body.local, 10);
+  const visitante =
+    req.body?.visitante === "" || req.body?.visitante == null
+      ? null
+      : Number.parseInt(req.body.visitante, 10);
+  const winnerRaw = req.body?.winner ?? null;
+  const winner = winnerRaw == null || winnerRaw === "" ? null : String(winnerRaw);
   const updatedAt = new Date().toISOString();
 
   if (!matchId) {
     res.status(400).json({ error: "invalid_match_id" });
     return;
   }
+  if (
+    (local != null && (Number.isNaN(local) || local < 0 || local > 10)) ||
+    (visitante != null && (Number.isNaN(visitante) || visitante < 0 || visitante > 10))
+  ) {
+    res.status(400).json({ error: "invalid_score" });
+    return;
+  }
 
-  await dbRun(
-    db,
-    "INSERT INTO predictions (email, match_id, local, visitante, winner, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(email, match_id) DO UPDATE SET local=excluded.local, visitante=excluded.visitante, winner=excluded.winner, updated_at=excluded.updated_at",
-    [email, matchId, local, visitante, winner, updatedAt],
-  );
-  persistDb(db);
-  res.json({ ok: true, updatedAt });
+  try {
+    await dbRun(
+      db,
+      "INSERT INTO predictions (email, match_id, local, visitante, winner, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(email, match_id) DO UPDATE SET local=excluded.local, visitante=excluded.visitante, winner=excluded.winner, updated_at=excluded.updated_at",
+      [email, matchId, local, visitante, winner, updatedAt],
+    );
+    persistDb(db);
+    res.json({ ok: true, updatedAt });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("prediction_save_failed", {
+      email,
+      matchId,
+      local,
+      visitante,
+      winner,
+      error: err?.message ?? String(err),
+    });
+    res.status(500).json({ error: "prediction_save_failed" });
+  }
 });
 
 function normalizeGoleadoresPicks(picks) {
