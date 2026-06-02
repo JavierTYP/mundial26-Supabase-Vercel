@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "../components/Card.jsx";
 import Badge from "../components/Badge.jsx";
+import Button from "../components/Button.jsx";
 import Flag from "../components/Flag.jsx";
 import KnockoutBracket from "../components/KnockoutBracket.jsx";
 import { buildPredictedKnockoutTournament } from "../utils/predictedKnockout.js";
@@ -39,7 +40,7 @@ function MatchPredictionCard({
   const timeoutRef = useRef(null);
   const autoSaveTimeoutRef = useRef(null);
   const lastAutoSavedRef = useRef({ local: null, visitante: null });
-  const latestRef = useRef({ canSave: false, onSave: null, local: "", visitante: "" });
+  const latestRef = useRef({ onSave: null, local: "", visitante: "", winner: "" });
 
   useEffect(() => {
     setLocal(prediction?.local ?? "");
@@ -56,67 +57,63 @@ function MatchPredictionCard({
   const canSave = !disabled && localTeam && awayTeam && l != null && v != null;
   const isTie = l != null && v != null && l === v;
   const canPickWinner = isTie && localTeam && awayTeam;
+  latestRef.current = { onSave, local, visitante, winner };
 
-  useEffect(() => {
-    latestRef.current = { canSave, onSave, local, visitante };
-  }, [canSave, local, onSave, visitante]);
+  function flashSaved() {
+    setFlash(true);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setFlash(false), 450);
+  }
+
+  function commitScore(nextLocalRaw, nextVisitanteRaw, nextWinnerRaw = winner, options = {}) {
+    if (disabled || !localTeam || !awayTeam || !onSave) return;
+    const nextLocal = clampGoals(nextLocalRaw);
+    const nextVisitante = clampGoals(nextVisitanteRaw);
+    if (nextLocal == null || nextVisitante == null) return;
+
+    const nextWinner = nextLocal === nextVisitante ? nextWinnerRaw || null : null;
+    const last = lastAutoSavedRef.current;
+    if (last.local === nextLocal && last.visitante === nextVisitante && !options.force) return;
+
+    const run = () => {
+      lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
+      onSave(nextLocal, nextVisitante, nextWinner);
+      if (options.flash !== false) flashSaved();
+    };
+
+    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
+    if (options.immediate) run();
+    else autoSaveTimeoutRef.current = setTimeout(run, 550);
+  }
 
   useEffect(() => {
     return () => {
       const latest = latestRef.current;
-      if (latest.canSave && latest.onSave) {
-        const nextLocal = clampGoals(latest.local);
-        const nextVisitante = clampGoals(latest.visitante);
-        if (nextLocal != null && nextVisitante != null) {
-          const last = lastAutoSavedRef.current;
-          if (last.local !== nextLocal || last.visitante !== nextVisitante) {
-            lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
-            latest.onSave(nextLocal, nextVisitante);
-          }
+      const nextLocal = clampGoals(latest.local);
+      const nextVisitante = clampGoals(latest.visitante);
+      if (!disabled && localTeam && awayTeam && latest.onSave && nextLocal != null && nextVisitante != null) {
+        const last = lastAutoSavedRef.current;
+        if (last.local !== nextLocal || last.visitante !== nextVisitante) {
+          lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
+          latest.onSave(
+            nextLocal,
+            nextVisitante,
+            nextLocal === nextVisitante ? latest.winner || null : null,
+          );
         }
       }
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    if (!canSave) return;
-    if (!onSave) return;
-
-    const nextLocal = clampGoals(local);
-    const nextVisitante = clampGoals(visitante);
-    if (nextLocal == null || nextVisitante == null) return;
-
-    const last = lastAutoSavedRef.current;
-    if (last.local === nextLocal && last.visitante === nextVisitante) return;
-
-    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-    autoSaveTimeoutRef.current = setTimeout(() => {
-      lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
-      onSave(nextLocal, nextVisitante);
-      setFlash(true);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => setFlash(false), 450);
-    }, 550);
-
-    return () => {
-      if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-    };
-  }, [canSave, local, onSave, visitante]);
-
-  useEffect(() => {
-    if (!onDraft) return;
-    if (disabled) return;
-    if (!localTeam || !awayTeam) return;
-    onDraft(clampGoals(local), clampGoals(visitante));
-  }, [awayTeam, disabled, local, localTeam, onDraft, visitante]);
+  }, [awayTeam, disabled, localTeam]);
 
   useEffect(() => {
     if (!onPickWinner) return;
     if (!canPickWinner) return;
     if (!winner) return;
     if (winner !== match.local && winner !== match.visitante) return;
+    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
+    lastAutoSavedRef.current = { local: l, visitante: v };
     onPickWinner(winner, l, v);
   }, [canPickWinner, l, match.local, match.visitante, onPickWinner, v, winner]);
 
@@ -151,7 +148,13 @@ function MatchPredictionCard({
               min={0}
               max={10}
               value={local}
-              onChange={(e) => setLocal(e.target.value)}
+              onBlur={() => commitScore(local, visitante, winner, { immediate: true, flash: false })}
+              onChange={(e) => {
+                const next = e.target.value;
+                setLocal(next);
+                onDraft?.(clampGoals(next), clampGoals(visitante));
+                commitScore(next, visitante);
+              }}
             />
             <span className="text-slate-500">-</span>
             <input
@@ -161,7 +164,13 @@ function MatchPredictionCard({
               min={0}
               max={10}
               value={visitante}
-              onChange={(e) => setVisitante(e.target.value)}
+              onBlur={() => commitScore(local, visitante, winner, { immediate: true, flash: false })}
+              onChange={(e) => {
+                const next = e.target.value;
+                setVisitante(next);
+                onDraft?.(clampGoals(local), clampGoals(next));
+                commitScore(local, next);
+              }}
             />
           </div>
 
@@ -235,14 +244,71 @@ export default function KnockoutPredictionsView({
     const list = predictedTorneo?.[roundKey];
     return Array.isArray(list) ? list : matches ?? [];
   }, [matches, predictedTorneo, roundKey]);
+  const [saveStatus, setSaveStatus] = useState("");
+  const currentPredictionsByMatchId = standingsPredictionsByMatchId ?? predictionsByMatchId;
+  const showManualSave = roundKey === "dieciseisavos";
+
+  const savableMatches = useMemo(() => {
+    return (projectedMatches ?? []).filter((m) => {
+      if (!m?.id || !m.local || !m.visitante) return false;
+      const row = currentPredictionsByMatchId?.[m.id] ?? null;
+      return clampGoals(row?.local) != null && clampGoals(row?.visitante) != null;
+    });
+  }, [currentPredictionsByMatchId, projectedMatches]);
+
+  useEffect(() => {
+    if (!saveStatus) return undefined;
+    const t = setTimeout(() => setSaveStatus(""), 2200);
+    return () => clearTimeout(t);
+  }, [saveStatus]);
+
+  function saveVisiblePredictions() {
+    if (predictionsLocked || !onUpdatePrediction) return;
+    if (!savableMatches.length) {
+      setSaveStatus("Completa algún partido");
+      return;
+    }
+
+    for (const match of savableMatches) {
+      const row = currentPredictionsByMatchId?.[match.id] ?? null;
+      const local = clampGoals(row?.local);
+      const visitante = clampGoals(row?.visitante);
+      if (local == null || visitante == null) continue;
+      const winner =
+        local === visitante && (row?.winner === match.local || row?.winner === match.visitante)
+          ? row.winner
+          : null;
+      onUpdatePrediction(match.id, local, visitante, winner);
+    }
+
+    const count = savableMatches.length;
+    setSaveStatus(`${count} partido${count === 1 ? "" : "s"} guardado${count === 1 ? "" : "s"}`);
+  }
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-black tracking-tight">{title}</h2>
-        <p className="text-sm text-slate-300">
-          Pronósticos de {title}. {predictionsLocked ? "Bloqueados por el administrador." : ""}
-        </p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-black tracking-tight">{title}</h2>
+          <p className="text-sm text-slate-300">
+            Pronósticos de {title}. {predictionsLocked ? "Bloqueados por el administrador." : ""}
+          </p>
+        </div>
+
+        {showManualSave ? (
+          <div className="flex flex-col items-start gap-1 md:items-end">
+            <Button
+              variant="secondary"
+              disabled={predictionsLocked || !onUpdatePrediction || savableMatches.length === 0}
+              onClick={saveVisiblePredictions}
+            >
+              Guardar datos
+            </Button>
+            {saveStatus ? (
+              <div className="text-xs font-semibold text-emerald-300">{saveStatus}</div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
@@ -253,7 +319,7 @@ export default function KnockoutPredictionsView({
             teamsById={teamsById}
             disabled={predictionsLocked}
             prediction={predictionsByMatchId?.[m.id] ?? null}
-            onSave={(l, v) => onUpdatePrediction?.(m.id, l, v)}
+            onSave={(l, v, winner = null) => onUpdatePrediction?.(m.id, l, v, winner)}
             onDraft={(l, v) => onUpdatePredictionDraft?.(m.id, l, v)}
             onPickWinner={(winner, l, v) => {
               onUpdatePrediction?.(m.id, l, v, winner);
