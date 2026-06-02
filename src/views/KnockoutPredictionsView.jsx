@@ -71,7 +71,9 @@ function MatchPredictionCard({
     const nextVisitante = clampGoals(nextVisitanteRaw);
     if (nextLocal == null || nextVisitante == null) return;
 
-    const nextWinner = nextLocal === nextVisitante ? nextWinnerRaw || null : null;
+    const isNextTie = nextLocal === nextVisitante;
+    if (isNextTie && nextWinnerRaw !== match.local && nextWinnerRaw !== match.visitante) return;
+    const nextWinner = isNextTie ? nextWinnerRaw : nextLocal > nextVisitante ? match.local : match.visitante;
     const last = lastAutoSavedRef.current;
     if (last.local === nextLocal && last.visitante === nextVisitante && !options.force) return;
 
@@ -93,13 +95,17 @@ function MatchPredictionCard({
       const nextVisitante = clampGoals(latest.visitante);
       if (!disabled && localTeam && awayTeam && latest.onSave && nextLocal != null && nextVisitante != null) {
         const last = lastAutoSavedRef.current;
-        if (last.local !== nextLocal || last.visitante !== nextVisitante) {
+        const latestWinner =
+          nextLocal === nextVisitante
+            ? latest.winner === match.local || latest.winner === match.visitante
+              ? latest.winner
+              : null
+            : nextLocal > nextVisitante
+              ? match.local
+              : match.visitante;
+        if (latestWinner && (last.local !== nextLocal || last.visitante !== nextVisitante)) {
           lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
-          latest.onSave(
-            nextLocal,
-            nextVisitante,
-            nextLocal === nextVisitante ? latest.winner || null : null,
-          );
+          latest.onSave(nextLocal, nextVisitante, latestWinner);
         }
       }
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -252,7 +258,11 @@ export default function KnockoutPredictionsView({
     return (projectedMatches ?? []).filter((m) => {
       if (!m?.id || !m.local || !m.visitante) return false;
       const row = currentPredictionsByMatchId?.[m.id] ?? null;
-      return clampGoals(row?.local) != null && clampGoals(row?.visitante) != null;
+      const local = clampGoals(row?.local);
+      const visitante = clampGoals(row?.visitante);
+      if (local == null || visitante == null) return false;
+      if (local !== visitante) return true;
+      return row?.winner === m.local || row?.winner === m.visitante;
     });
   }, [currentPredictionsByMatchId, projectedMatches]);
 
@@ -275,9 +285,13 @@ export default function KnockoutPredictionsView({
       const visitante = clampGoals(row?.visitante);
       if (local == null || visitante == null) continue;
       const winner =
-        local === visitante && (row?.winner === match.local || row?.winner === match.visitante)
-          ? row.winner
-          : null;
+        local === visitante
+          ? row?.winner === match.local || row?.winner === match.visitante
+            ? row.winner
+            : null
+          : local > visitante
+            ? match.local
+            : match.visitante;
       onUpdatePrediction(match.id, local, visitante, winner);
     }
 
