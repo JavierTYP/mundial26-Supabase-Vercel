@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import Card from "./Card.jsx";
+import Flag from "./Flag.jsx";
 
 function matchNumber(id) {
   // Use the last numeric suffix so ids like "16-D10" sort by 10 (not 16).
@@ -42,14 +43,23 @@ function loserTeamId(match) {
   return null;
 }
 
-function TeamLine({ teamName, score, faded = false }) {
+function TeamLine({ team, teamName, score, faded = false }) {
   return (
     <div
       className={`flex h-9 items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/50 px-3 text-xs ${
         faded ? "text-slate-500" : "text-slate-100"
       }`}
+      title={teamName}
     >
-      <div className="min-w-0 flex-1 truncate font-semibold">{teamName}</div>
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        {team ? (
+          <Flag
+            team={team}
+            className="h-4 w-5 shrink-0 rounded-[2px] object-cover ring-1 ring-white/10"
+          />
+        ) : null}
+        <div className="min-w-0 flex-1 truncate font-semibold">{teamName}</div>
+      </div>
       <div className="w-6 text-right font-black text-slate-200">
         {score == null ? " " : score}
       </div>
@@ -78,8 +88,8 @@ function MatchCard({ title, match, teamIndex, fallbackLabel = null, showMatchId 
         </div>
       ) : null}
       <div className="space-y-1">
-        <TeamLine teamName={localName} score={lScore} faded={!hasTeams} />
-        <TeamLine teamName={awayName} score={vScore} faded={!hasTeams} />
+        <TeamLine team={localTeam} teamName={localName} score={lScore} faded={!hasTeams} />
+        <TeamLine team={awayTeam} teamName={awayName} score={vScore} faded={!hasTeams} />
       </div>
     </div>
   );
@@ -161,8 +171,8 @@ export default function KnockoutBracket({
       </div>
 
       <div className="mt-4 overflow-x-auto bracket-scroll">
-        <div className="min-w-[1100px]">
-          <div className="grid grid-cols-9 gap-4 text-center text-[11px] font-black uppercase tracking-wide text-slate-400">
+        <div className="min-w-[1320px]">
+          <div className="grid grid-cols-[repeat(9,minmax(128px,1fr))] gap-5 text-center text-[11px] font-black uppercase tracking-wide text-slate-400">
             <div>16avos</div>
             <div>8avos</div>
             <div>4tos</div>
@@ -174,7 +184,7 @@ export default function KnockoutBracket({
             <div>16avos</div>
           </div>
 
-          <div className="mt-4 grid grid-cols-9 gap-4">
+          <div className="mt-4 grid grid-cols-[repeat(9,minmax(128px,1fr))] gap-5">
             <div className="flex flex-col" style={{ gap: `${GAP_16}px` }}>
               {col16Left.map((m) => (
                 <MatchCard key={m.id} match={m} teamIndex={teamIndex} />

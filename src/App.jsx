@@ -963,7 +963,7 @@ export default function App() {
         }}
       />
 
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 py-6 md:grid-cols-[220px_1fr]">
+      <div className="mx-auto grid w-full max-w-[1760px] grid-cols-1 gap-4 px-3 py-6 sm:px-4 md:grid-cols-[220px_minmax(0,1fr)] lg:px-6">
         {sidebarOpen ? (
           <button
             type="button"
@@ -982,7 +982,7 @@ export default function App() {
           } transition-transform md:transition-none`}
         />
 
-        <main className="min-w-0 space-y-10 px-4 pb-10 md:px-6">
+        <main className="min-w-0 space-y-10 pb-10">
           {activeView === "admin-users" ? (
             isAdmin ? (
               <AdminUsersView
