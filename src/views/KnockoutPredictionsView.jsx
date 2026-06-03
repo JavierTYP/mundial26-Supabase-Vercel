@@ -26,10 +26,8 @@ function MatchPredictionCard({
   teamsById,
   prediction,
   disabled,
-  manualSave = false,
   onSave,
   onDraft,
-  onPickWinner,
 }) {
   const localTeam = match.local ? teamsById.get(match.local) : null;
   const awayTeam = match.visitante ? teamsById.get(match.visitante) : null;
@@ -39,18 +37,11 @@ function MatchPredictionCard({
   const [winner, setWinner] = useState(prediction?.winner ?? "");
   const [flash, setFlash] = useState(false);
   const timeoutRef = useRef(null);
-  const autoSaveTimeoutRef = useRef(null);
-  const lastAutoSavedRef = useRef({ local: null, visitante: null });
-  const latestRef = useRef({ onSave: null, local: "", visitante: "", winner: "" });
 
   useEffect(() => {
     setLocal(prediction?.local ?? "");
     setVisitante(prediction?.visitante ?? "");
     setWinner(prediction?.winner ?? "");
-    lastAutoSavedRef.current = {
-      local: prediction?.local ?? null,
-      visitante: prediction?.visitante ?? null,
-    };
   }, [match.id, prediction?.local, prediction?.visitante, prediction?.winner]);
 
   const l = clampGoals(local);
@@ -67,7 +58,6 @@ function MatchPredictionCard({
         ? match.local
         : match.visitante;
   const canManualSave = canSave && (!isTie || Boolean(selectedWinner));
-  latestRef.current = { onSave, local, visitante, winner };
 
   function flashSaved() {
     setFlash(true);
@@ -75,73 +65,14 @@ function MatchPredictionCard({
     timeoutRef.current = setTimeout(() => setFlash(false), 450);
   }
 
-  function commitScore(nextLocalRaw, nextVisitanteRaw, nextWinnerRaw = winner, options = {}) {
-    if (manualSave) return;
-    if (disabled || !localTeam || !awayTeam || !onSave) return;
-    const nextLocal = clampGoals(nextLocalRaw);
-    const nextVisitante = clampGoals(nextVisitanteRaw);
-    if (nextLocal == null || nextVisitante == null) return;
-
-    const isNextTie = nextLocal === nextVisitante;
-    if (isNextTie && nextWinnerRaw !== match.local && nextWinnerRaw !== match.visitante) return;
-    const nextWinner = isNextTie ? nextWinnerRaw : nextLocal > nextVisitante ? match.local : match.visitante;
-    const last = lastAutoSavedRef.current;
-    if (last.local === nextLocal && last.visitante === nextVisitante && !options.force) return;
-
-    const run = () => {
-      lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
-      onSave(nextLocal, nextVisitante, nextWinner);
-      if (options.flash !== false) flashSaved();
-    };
-
-    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-    if (options.immediate) run();
-    else autoSaveTimeoutRef.current = setTimeout(run, 550);
-  }
-
   useEffect(() => {
     return () => {
-      if (manualSave) {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-        return;
-      }
-      const latest = latestRef.current;
-      const nextLocal = clampGoals(latest.local);
-      const nextVisitante = clampGoals(latest.visitante);
-      if (!disabled && localTeam && awayTeam && latest.onSave && nextLocal != null && nextVisitante != null) {
-        const last = lastAutoSavedRef.current;
-        const latestWinner =
-          nextLocal === nextVisitante
-            ? latest.winner === match.local || latest.winner === match.visitante
-              ? latest.winner
-              : null
-            : nextLocal > nextVisitante
-              ? match.local
-              : match.visitante;
-        if (latestWinner && (last.local !== nextLocal || last.visitante !== nextVisitante)) {
-          lastAutoSavedRef.current = { local: nextLocal, visitante: nextVisitante };
-          latest.onSave(nextLocal, nextVisitante, latestWinner);
-        }
-      }
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
     };
-  }, [awayTeam, disabled, localTeam, manualSave]);
-
-  useEffect(() => {
-    if (manualSave) return;
-    if (!onPickWinner) return;
-    if (!canPickWinner) return;
-    if (!winner) return;
-    if (winner !== match.local && winner !== match.visitante) return;
-    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
-    lastAutoSavedRef.current = { local: l, visitante: v };
-    onPickWinner(winner, l, v);
-  }, [canPickWinner, l, manualSave, match.local, match.visitante, onPickWinner, v, winner]);
+  }, []);
 
   function saveManual() {
-    if (!manualSave || !canManualSave || !onSave) return;
+    if (!canManualSave || !onSave) return;
     onSave(l, v, selectedWinner);
     flashSaved();
   }
@@ -177,12 +108,10 @@ function MatchPredictionCard({
               min={0}
               max={10}
               value={local}
-              onBlur={() => commitScore(local, visitante, winner, { immediate: true, flash: false })}
               onChange={(e) => {
                 const next = e.target.value;
                 setLocal(next);
                 onDraft?.(clampGoals(next), clampGoals(visitante));
-                commitScore(next, visitante);
               }}
             />
             <span className="text-slate-500">-</span>
@@ -193,12 +122,10 @@ function MatchPredictionCard({
               min={0}
               max={10}
               value={visitante}
-              onBlur={() => commitScore(local, visitante, winner, { immediate: true, flash: false })}
               onChange={(e) => {
                 const next = e.target.value;
                 setVisitante(next);
                 onDraft?.(clampGoals(local), clampGoals(next));
-                commitScore(local, next);
               }}
             />
           </div>
@@ -223,15 +150,11 @@ function MatchPredictionCard({
               ? "Pronósticos bloqueados."
               : isTie
                 ? "En caso de empate, elije ganador."
-                : manualSave
-                  ? "0–10 goles, guarda este resultado."
-                  : "0–10 goles, guardado automático"}
+                : "0–10 goles, guarda este resultado."}
           </div>
-          {manualSave ? (
-            <Button variant="secondary" disabled={!canManualSave} onClick={saveManual}>
-              Guardar
-            </Button>
-          ) : null}
+          <Button variant="secondary" disabled={!canManualSave} onClick={saveManual}>
+            Guardar
+          </Button>
         </div>
 
         {canPickWinner ? (
@@ -284,8 +207,6 @@ export default function KnockoutPredictionsView({
     const list = predictedTorneo?.[roundKey];
     return Array.isArray(list) ? list : matches ?? [];
   }, [matches, predictedTorneo, roundKey]);
-  const manualSave = roundKey === "dieciseisavos";
-
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
@@ -305,12 +226,8 @@ export default function KnockoutPredictionsView({
             teamsById={teamsById}
             disabled={predictionsLocked}
             prediction={predictionsByMatchId?.[m.id] ?? null}
-            manualSave={manualSave}
             onSave={(l, v, winner = null) => onUpdatePrediction?.(m.id, l, v, winner)}
             onDraft={(l, v, winner) => onUpdatePredictionDraft?.(m.id, l, v, winner)}
-            onPickWinner={(winner, l, v) => {
-              onUpdatePrediction?.(m.id, l, v, winner);
-            }}
           />
         ))}
       </div>
